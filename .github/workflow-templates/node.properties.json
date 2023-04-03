@@ -1,0 +1,12 @@
+{
+  "name": "PNPM Workflow",
+  "description": "Sample description",
+  "categories": [
+    "node"
+  ],
+  "filePatterns": [
+    "package.json",
+    "pnpm-lock.yaml",
+    "pnom-workspace.yaml"
+  ]
+}
