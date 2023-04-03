@@ -4,16 +4,16 @@ description: "Get Build Number"
 outputs:
   build_number:
     description: "Build Number (default 1)"
-    value: ${{ steps.build_number.outputs.build_number }}
-  next_tag:
+    value: ${{ steps.next-number.outputs.build_number }}
+  tag:
     description: "Next Tag"
-    value: ${{ steps.build_number.outputs.tag }}
+    value: ${{ steps.next-number.outputs.tag }}
 
 runs:
   using: composite
   steps:
     - name: Get Build Number
-      id: build_number
+      id: next-number
       shell: bash
       run: |
         git pull --tags
