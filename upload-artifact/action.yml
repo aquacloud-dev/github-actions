@@ -1,0 +1,65 @@
+name: Upload S3 Artifact
+description: "Upload an artifact to S3"
+inputs:
+  bucket:
+    description: "S3 bucket"
+    required: true
+  path:
+    description: "S3 path"
+    required: false
+    default: ""
+  source:
+    description: "Source files/directoreis"
+    required: true
+  aws_region:
+    description: "S3 region"
+    required: true
+  aws_access_key_id:
+    description: "AWS Access Key ID"
+    required: true
+  aws_secret_access_key:
+    description: "AWS Secret Access Key"
+    required: true
+  context:
+    description: "Context directory"
+    default: .
+    required: false
+outputs:
+  s3_url:
+    description: "S3 Url"
+    value: ${{ steps.upload_url.outputs.s3_url }}
+  zip_file:
+    description: "Name of the uploaded zip file"
+    value: ${{ steps.zip.outputs.zip_file }}
+runs:
+  using: composite
+  steps:
+    - id: trim-sha
+      name: Trim SHA
+      shell: bash
+      run: |
+        SHA="${{github.sha}}"
+        echo "sha=${SHA:0:7}" >> $GITHUB_OUTPUT
+    - id: zip
+      name: Create Zip
+      uses: aquacloud-dev/actions/zip@v1
+      with:
+        files: ${{ inputs.source}}
+        output: ${{ steps.trim-sha.outputs.sha }}
+        context: ${{ inputs.context }}
+    - id: upload
+      name: Upload to S3
+      uses: keithweaver/aws-s3-github-action@v1.0.0
+      with:
+        command: cp
+        aws_access_key_id: ${{ inputs.aws_access_key_id }}
+        aws_secret_access_key: ${{ inputs.aws_secret_access_key }}
+        aws_region: ${{ inputs.aws_region }}
+        source: ${{ inputs.context }}/${{ steps.trim-sha.outputs.sha }}.zip
+        destination: s3://${{ inputs.bucket }}/${{ github.repository }}${{ inputs.path }}/${{ steps.zip.outputs.zip_file }}.zip
+    - id: upload_url
+      name: Output Path
+      shell: bash
+      run: |
+        S3_URL="s3://${{ inputs.bucket }}/${{ github.repository }}${{ inputs.path }}/${{ steps.zip.outputs.zip_file }}.zip"
+        echo "s3_url=$S3_URL" >> $GITHUB_OUTPUT

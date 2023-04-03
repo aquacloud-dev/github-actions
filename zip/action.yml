@@ -1,0 +1,33 @@
+name: Zip
+description: Zip Folder/Files
+inputs:
+  files:
+    description: "Files to zip"
+    required: true
+  output:
+    description: Zip filename
+    required: true
+  context:
+    description: Working Directory
+    required: false
+    default: .
+outputs:
+  zip_file:
+    description: "Zip file (does not includes the extension)"
+    value: ${{ steps.zip.outputs.zip_file }}
+runs:
+  using: composite
+  steps:
+    - id: zip
+      name: Zip Files
+      shell: bash
+      run: |
+        # Prepare files list
+        FILES=$(echo ${{ inputs.files }} | tr "," "\n" | xargs)
+        ZIP_FILE="${{ inputs.output }}"
+
+        cd ${{ inputs.context }}
+        zip -qq -r "${ZIP_FILE}.zip" $FILES
+
+        echo "::debug::$(unzip -l "${ZIP_FILE}.zip")"
+        echo "zip_file=$ZIP_FILE" >> $GITHUB_OUTPUT;

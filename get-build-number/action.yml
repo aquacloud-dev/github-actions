@@ -1,0 +1,35 @@
+name: "Get Build Number"
+description: "Get Build Number"
+
+outputs:
+  build_number:
+    description: "Build Number (default 1)"
+    value: ${{ steps.build_number.outputs.build_number }}
+  next_tag:
+    description: "Next Tag"
+    value: ${{ steps.build_number.outputs.next_tag }}
+
+runs:
+  using: composite
+  steps:
+    - name: Get Build Number
+      id: build_number
+      shell: bash
+      run: |
+        git pull --tags
+
+        BRANCH_NAME=${GITHUB_REF##*/}
+        BRANCH_NAME=${BRANCH_NAME//\//-}
+
+        BUILD_NUMBER=$(git tag | sort --version-sort | grep "$BRANCH_NAME" | tail -n 1 | awk -F. '{print $2}')
+
+        if [ -z "$BUILD_NUMBER" ]; then 
+          BUILD_NUMBER=1
+        else
+          BUILD_NUMBER=$(( BUILD_NUMBER + 1 ))
+        fi
+
+        NEXT_TAG="$BRANCH_NAME.$BUILD_NUMBER"
+
+        echo "build_number=$BUILD_NUMBER" >> $GITHUB_OUTPUT
+        echo "next_tag=$NEXT_TAG" >> $GITHUB_OUTPUT

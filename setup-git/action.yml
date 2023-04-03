@@ -1,0 +1,32 @@
+name: "Setup Git"
+description: "Setup Git"
+
+inputs:
+  BOT_ID:
+    required: true
+    description: "The ID of the github-app"
+  BOT_PEM:
+    required: true
+    description: "The bot PEM in base64"
+
+outputs:
+  token:
+    value: ${{ steps.get_token.outputs.app_token }}
+    description: "The github-token for the bot"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Get Bot Token
+      id: get_token
+      uses: machine-learning-apps/actions-app-token@master
+      with:
+        APP_ID: ${{ inputs.BOT_ID }}
+        APP_PEM: ${{ inputs.BOT_PEM }}
+    - name: Setup git
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ steps.get_token.outputs.app_token }}
+      run: |
+        git config --global user.email "bot@aquacloud.it"
+        git config --global user.name "Aquacloud Bot"
