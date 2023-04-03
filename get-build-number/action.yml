@@ -7,7 +7,7 @@ outputs:
     value: ${{ steps.build_number.outputs.build_number }}
   next_tag:
     description: "Next Tag"
-    value: ${{ steps.build_number.outputs.next_tag }}
+    value: ${{ steps.build_number.outputs.tag }}
 
 runs:
   using: composite
@@ -32,4 +32,4 @@ runs:
         NEXT_TAG="$BRANCH_NAME.$BUILD_NUMBER"
 
         echo "build_number=$BUILD_NUMBER" >> $GITHUB_OUTPUT
-        echo "next_tag=$NEXT_TAG" >> $GITHUB_OUTPUT
+        echo "tag=$NEXT_TAG" >> $GITHUB_OUTPUT
