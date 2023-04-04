@@ -23,6 +23,7 @@ runs:
     - name: "Setup Java"
       uses: actions/setup-java@v3
       with:
+        distribution: "oracle"
         java-version: ${{ inputs.java-version }}
         cache: "maven"
         server-id: ${{ inputs.server-id }}
