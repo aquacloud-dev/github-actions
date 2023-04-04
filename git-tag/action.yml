@@ -1,0 +1,17 @@
+name: "Git Tag"
+description: "Git Tag"
+
+inputs:
+  tag:
+    description: "TAG"
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: "Git Tag"
+      shell: bash
+      run: |
+        TAG="${{ inputs.tag }}"
+        git tag $TAG -m "Release $TAG"
+        git push origin $TAG
