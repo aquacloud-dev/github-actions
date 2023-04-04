@@ -21,6 +21,9 @@ inputs:
     description: "Download path"
     default: "."
     required: false
+  path:
+    description: "remote path"
+    required: false
   filename:
     description: "Remote zip name (NO EXTENSION)"
     required: true
