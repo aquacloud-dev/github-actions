@@ -18,8 +18,6 @@ runs:
       run: |
         set -e
 
-        git fetch --tags
-
         BRANCH_NAME=${GITHUB_REF##*/}
         BRANCH_NAME=${BRANCH_NAME//\//-}
 
