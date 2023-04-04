@@ -42,7 +42,7 @@ runs:
         echo "sha=${SHA:0:7}" >> $GITHUB_OUTPUT
     - id: zip
       name: Create Zip
-      uses: aquacloud-dev/github-actions/zip@v1
+      uses: aquacloud-dev/github-actions/zip@main
       with:
         files: ${{ inputs.source}}
         output: ${{ steps.trim-sha.outputs.sha }}
