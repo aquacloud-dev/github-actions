@@ -16,6 +16,8 @@ runs:
       id: next-number
       shell: bash
       run: |
+        set -e
+
         git fetch --tags
 
         BRANCH_NAME=${GITHUB_REF##*/}
