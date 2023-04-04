@@ -67,7 +67,7 @@ runs:
         aws_secret_access_key: ${{ inputs.aws_secret_access_key }}
         aws_region: ${{ inputs.aws_region }}
         source: ${{ inputs.context }}/${{ steps.get-filename.outputs.filename }}.zip
-        destination: s3://${{ inputs.bucket }}/${{ github.repository }}${{ inputs.path }}/${{ steps.zip.outputs.zip_file }}.zip
+        destination: s3://${{ inputs.bucket }}/${{ github.repository }}${{ inputs.path }}/${{ steps.get-filename.outputs.filename }}.zip
     - id: upload_url
       name: Output Path
       shell: bash
