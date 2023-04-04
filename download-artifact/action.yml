@@ -22,7 +22,7 @@ inputs:
     default: "."
     required: false
   filename:
-    description: "Remote zip file"
+    description: "Remote zip name (NO EXTENSION)"
     required: true
 
 runs:

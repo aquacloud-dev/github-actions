@@ -5,16 +5,16 @@ inputs:
     description: "Files to zip"
     required: true
   output:
-    description: Zip filename
+    description: "Zip filename (NO EXTENSION)"
     required: true
   context:
     description: Working Directory
     required: false
     default: .
 outputs:
-  zip_file:
-    description: "Zip file (does not includes the extension)"
-    value: ${{ steps.zip.outputs.zip_file }}
+  filename:
+    description: "Zip file (NO EXTENSION)"
+    value: ${{ steps.zip.outputs.filename }}
 runs:
   using: composite
   steps:
@@ -30,4 +30,4 @@ runs:
         zip -qq -r "${ZIP_FILE}.zip" $FILES
 
         echo "::debug::$(unzip -l "${ZIP_FILE}.zip")"
-        echo "zip_file=$ZIP_FILE" >> $GITHUB_OUTPUT;
+        echo "filename=$ZIP_FILE" >> $GITHUB_OUTPUT;
