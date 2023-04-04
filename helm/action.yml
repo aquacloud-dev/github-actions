@@ -1,9 +1,6 @@
 name: "Helm"
 description: "Update version and release helm package"
-
-branding:
-  icon: box
-  color: gray-dark
+author: "Federico Vitale <federico.vitale@aquacloud.it>"
 
 inputs:
   version:
@@ -24,8 +21,6 @@ inputs:
     description: "Github Token"
     required: true
 
-author: "Federico Vitale <federico.vitale@aquacloud.it>"
-
 runs:
   using: composite
   steps:
@@ -33,13 +28,13 @@ runs:
       uses: azure/setup-helm@v1.1
       with:
         version: v3.7.0
-        token: ${{ secrets.token }}
+        token: ${{ inputs.token }}
 
     - name: Helm Repository Checkout
       uses: actions/checkout@v2
       with:
         repository: ${{ inputs.repo }}
-        token: ${{ secrets.token }}
+        token: ${{ inputs.token }}
         fetch-depth: 0
         persist-credentials: true
         ref: main
@@ -51,7 +46,7 @@ runs:
         commitChange: false
         valueFile: ".chart/Chart.yaml"
         propertyPath: "version"
-        value: ${{ github.event.inputs.version }}
+        value: ${{ inputs.version }}
         message: "Update chart version to ${{ github.event.inputs.version }}"
         updateFile: true
 
@@ -61,7 +56,7 @@ runs:
         commitChange: false
         valueFile: ".chart/Chart.yaml"
         propertyPath: "appVersion"
-        value: ${{ github.event.inputs.version }}
+        value: ${{ inputs.version }}
         message: "Update chart version to ${{ github.event.inputs.version }}"
         updateFile: true
 
@@ -72,7 +67,7 @@ runs:
     - name: Helm Push
       uses: dmnemec/copy_file_to_another_repo_action@main
       env:
-        API_TOKEN_GITHUB: ${{ secrets.token }}
+        API_TOKEN_GITHUB: ${{ inputs.token }}
       with:
         destination_repo: ${{ inputs.repo }}
         source_file: helm/${{ github.event.repository.name }}-${{ github.event.inputs.version }}.tgz
