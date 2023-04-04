@@ -31,9 +31,9 @@ outputs:
   s3_url:
     description: "S3 Url"
     value: ${{ steps.upload_url.outputs.s3_url }}
-  zip_file:
+  filename:
     description: "Name of the uploaded zip file"
-    value: ${{ steps.zip.outputs.zip_file }}
+    value: ${{ steps.zip.outputs.filename }}
 runs:
   using: composite
   steps:
