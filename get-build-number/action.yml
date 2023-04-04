@@ -16,12 +16,16 @@ runs:
       id: next-number
       shell: bash
       run: |
-        set -e
+        set -x
 
         BRANCH_NAME=${GITHUB_REF##*/}
         BRANCH_NAME=${BRANCH_NAME//\//-}
 
+        echo "NAME: $BRANCH_NAME"
+
         BUILD_NUMBER=$(git tag | sort --version-sort | grep "$BRANCH_NAME" | tail -n 1 | awk -F. '{print $2}')
+
+        echo "N1: $BUILD_NUMBER"
 
         if [ -z "$BUILD_NUMBER" ]; then 
           BUILD_NUMBER=1
@@ -29,7 +33,11 @@ runs:
           BUILD_NUMBER=$(( BUILD_NUMBER + 1 ))
         fi
 
+        echo "N2: $BUILD_NUMBER"
+
         NEXT_TAG="$BRANCH_NAME.$BUILD_NUMBER"
+
+        echo "TAG: $NEXT_TAG"
 
         echo "build_number=$BUILD_NUMBER" >> $GITHUB_OUTPUT
         echo "tag=$NEXT_TAG" >> $GITHUB_OUTPUT
