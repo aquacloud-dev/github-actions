@@ -6,10 +6,10 @@
 ## Inputs
 | Name | Description | Default | Required | 
 | ---- | ----------- | ------- | -------- |
-| `java-version` | Java Version | 17 | `false` |
-| `server-username` | Server username | `nd` | `true` |
 | `server-id` | Server ID | github | `false` |
+| `server-username` | Server username | `nd` | `true` |
 | `server-password` | Server password | `nd` | `true` |
+| `java-version` | Java Version | 17 | `false` |
 
 
 

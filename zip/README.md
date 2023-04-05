@@ -6,9 +6,9 @@
 ## Inputs
 | Name | Description | Default | Required | 
 | ---- | ----------- | ------- | -------- |
-| `context` | Working Directory | . | `false` |
 | `output` | Zip filename (NO EXTENSION) | `nd` | `true` |
 | `files` | Files to zip | `nd` | `true` |
+| `context` | Working Directory | . | `false` |
 
 
 

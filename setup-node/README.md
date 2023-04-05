@@ -6,8 +6,8 @@
 ## Inputs
 | Name | Description | Default | Required | 
 | ---- | ----------- | ------- | -------- |
-| `pnpm-version` | PNPM Version | 7 | `false` |
 | `node-version` | Node Version | 18 | `false` |
+| `pnpm-version` | PNPM Version | 7 | `false` |
 
 
 

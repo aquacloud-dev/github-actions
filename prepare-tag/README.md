@@ -7,9 +7,9 @@
 | Name | Description | Default | Required | 
 | ---- | ----------- | ------- | -------- |
 | `registry` | Docker registry | `nd` | `true` |
+| `manifest_version` | Manifest version (package.json, pom.xml etc) | `nd` | `true` |
 | `context` | Context directory | . | `false` |
 | `image_name` | Image name | ${{ github.event.repository.name }} | `false` |
-| `manifest_version` | Manifest version (package.json, pom.xml etc) | `nd` | `true` |
 
 
 
