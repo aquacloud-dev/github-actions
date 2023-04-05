@@ -9,25 +9,7 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Get Build Number
-      id: next-number
+    - id: next-number
+      name: Get Build Number
       shell: bash
-      run: |
-        BRANCH_NAME=${GITHUB_REF##*/}
-        BRANCH_NAME=${BRANCH_NAME//\//-}
-        BUILD_NUMBER=$(git tag | sort --version-sort | grep "$BRANCH_NAME" | tail -n 1 | awk -F. '{print $2}')
-
-        # Trim
-        BUILD_NUMBER=$(echo "${BUILD_NUMBER}" | xargs echo -n)
-
-        if [ -z "$BUILD_NUMBER" ]; then 
-          BUILD_NUMBER=1
-        else
-          BUILD_NUMBER=$(( BUILD_NUMBER + 1 ))
-        fi
-
-        TAG="$BRANCH_NAME.$BUILD_NUMBER"
-
-        echo "TAG=$TAG"
-
-        echo "tag=$TAG" >> $GITHUB_OUTPUT
+      run: script.sh
