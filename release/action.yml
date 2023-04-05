@@ -20,19 +20,19 @@ runs:
   steps:
     - name: "Semantic Release"
       id: semantic-release
-      if: ${{ inputs.run-semantic == 'true' }}
+      if: ${{ inputs.run-semantic == 'true' || inputs.run-semantic == true }}
       uses: aquacloud-dev/github-actions/semantic-release@main
       env:
         github_token: ${{ steps.git.outputs.token }}
 
     - name: "Prepare Tag"
       id: next
-      if: ${{ inputs.run-semantic == 'true' }}
+      if: ${{ inputs.run-semantic == 'false' }}
       uses: aquacloud-dev/github-actions/get-build-number@main
 
     - name: "Push Tag"
       id: tag
-      if: ${{ steps.next.outputs.tag }}
+      if: ${{ inputs.run-semantic == 'false' }}
       uses: aquacloud-dev/github-actions/git-tag@main
       with:
         tag: ${{ steps.next.outputs.tag }}
