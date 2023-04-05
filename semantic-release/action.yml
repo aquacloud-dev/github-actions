@@ -14,4 +14,4 @@ runs:
   steps:
     - name: Semantic Release
       id: release
-      uses: ahmadnassri/action-semantic-release@v2
+      uses: ahmadnassri/action-semantic-release@v1
