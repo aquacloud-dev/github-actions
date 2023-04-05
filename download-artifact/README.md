@@ -1,25 +1,24 @@
+
 # Download S3 Artifact
-```yaml
-- uses: aquacloud-dev/download-artifact-action@v1.1
-  with:
-    aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-    aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-    aws_region: ${{ secrets.AWS_REGION }}
-    bucket: ${{ secrets.S3_BUCKET_NAME }}
-    path: /${{ github.sha }} # path on s3
-    filename: dist # without zip extension!
-    extension: zip
-    output: . # unzip output folder
-    context: . # where to download the zip
-```
+> Download an artifact from S3
 
-## Steps
-- **Download artifact** - Downloads the `artifact zip` to the `context` path. (path => `{context}/${filename}.zip`)
-- **Unzip artifact** - Unzip the downloaded artifact to `output` (path => `{context}/{output}`)
 
-> Pseudo bash code below
-```sh
-	download --from s3://{bucket}/{path}/{filename}.zip --to {context}/{filename}.zip
-	cd {context}
-	unzip {filename}.zip -d {output}
-```
+## Inputs
+| Name | Description | Default | Required | 
+| ---- | ----------- | ------- | -------- |
+| `filename` | Remote zip name (NO EXTENSION) | `nd` | `true` |
+| `aws_region` | S3 region | `nd` | `true` |
+| `aws_access_key_id` | AWS Access Key ID | `nd` | `true` |
+| `context` | Download path | . | `false` |
+| `aws_secret_access_key` | AWS Secret Access Key | `nd` | `true` |
+| `path` | remote path | `nd` | `false` |
+| `output` | Unzip output | . | `false` |
+| `bucket` | S3 bucket | `nd` | `true` |
+
+
+
+## Outputs 
+| Name | Description |
+| ---- | ----------- |
+
+        

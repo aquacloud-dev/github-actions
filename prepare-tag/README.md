@@ -1,51 +1,23 @@
-# Prepare docker tag
 
-<!-- action-docs-description -->
+# Prepare Tag
+> Prepare docker tag
 
-## Description
-
-Prepare docker tag
-
-## Usage
-
-```yml
-- uses: aquacloud-dev/prepare-docker-tag-action@develop
-  with:
-    registry: ${{ secrets.registry_url }}
-    manifest_version: 0.0.1
-```
-
-<!-- action-docs-description -->
-
-<!-- action-docs-inputs -->
 
 ## Inputs
+| Name | Description | Default | Required | 
+| ---- | ----------- | ------- | -------- |
+| `registry` | Docker registry | `nd` | `true` |
+| `context` | Context directory | . | `false` |
+| `image_name` | Image name | ${{ github.event.repository.name }} | `false` |
+| `manifest_version` | Manifest version (package.json, pom.xml etc) | `nd` | `true` |
 
-| parameter        | description                                  | required | default                             |
-| ---------------- | -------------------------------------------- | -------- | ----------------------------------- |
-| registry         | Docker registry                              | `true`   |                                     |
-| context          | Context directory                            | `false`  | .                                   |
-| image_name       | Image name                                   | `false`  | ${{ github.event.repository.name }} |
-| manifest_version | Manifest version (package.json, pom.xml etc) | `true`   |                                     |
 
-<!-- action-docs-inputs -->
 
-<!-- action-docs-outputs -->
+## Outputs 
+| Name | Description |
+| ---- | ----------- |
+| `manifest_version` | List of maven version |
+| `tags` | List of docker tags |
+| `version` | List of docker version |
 
-## Outputs
-
-| parameter        | description            |
-| ---------------- | ---------------------- |
-| tags             | List of docker tags    |
-| version          | List of docker version |
-| manifest_version | List of maven version  |
-
-<!-- action-docs-outputs -->
-
-<!-- action-docs-runs -->
-
-## Runs
-
-This action is an `composite` action.
-
-<!-- action-docs-runs -->
+        

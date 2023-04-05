@@ -1,13 +1,17 @@
-# Usage
 
-```yaml
-- name: Setup GIT
-  uses: aquacloud-dev/github-actions/setup-git@main
-- name: Get Build Number
-  id: get_build_number
-  uses: aquacloud-dev/github-actions/get-build-number@main
-- name: Print
-  run: |
-    echo ${{ steps.get_build_number.outputs.next_tag }}
-    echo ${{ steps.get_build_number.outputs.build_number }}
-```
+# Get Build Number
+> Get Build Number
+
+
+## Inputs
+| Name | Description | Default | Required | 
+| ---- | ----------- | ------- | -------- |
+
+
+
+## Outputs 
+| Name | Description |
+| ---- | ----------- |
+| `tag` | Next Tag |
+
+        
