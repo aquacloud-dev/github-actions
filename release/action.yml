@@ -1,0 +1,38 @@
+name: "Release"
+description: "Release branch"
+
+outputs:
+  version:
+    description: "Released version"
+    value: ${{ steps.semantic-release.outputs.release || steps.tag.outputs.release }}
+  released:
+    description: "A boolean indicating wether the version has been released or not"
+    value: ${{ steps.semantic-release.outputs.released || steps.tag.outputs.released }}
+
+inputs:
+  run-semantic:
+    description: "Wether to run semantic-release or not"
+    default: "false"
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: "Semantic Release"
+      id: semantic-release
+      if: inputs.run-semantic == "true"
+      uses: aquacloud-dev/github-actions/semantic-release@main
+      env:
+        github_token: ${{ steps.git.outputs.token }}
+
+    - name: "Prepare Tag"
+      id: next
+      if: inputs.run-semantic != "true"
+      uses: aquacloud-dev/github-actions/get-build-number@main
+
+    - name: "Push Tag"
+      id: tag
+      if: ${{ steps.next.outputs.tag }}
+      uses: aquacloud-dev/github-actions/git-tag@main
+      with:
+        tag: ${{ steps.next.outputs.tag }}
