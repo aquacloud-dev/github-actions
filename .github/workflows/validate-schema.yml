@@ -7,8 +7,10 @@ defaults:
     shell: bash
 
 jobs:
-  actions:
+  validate-actions:
+    name: Validate Actions
     runs-on: ubuntu-latest
+    environment: validation
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -32,3 +34,41 @@ jobs:
               cd ..
             fi
           done
+
+  generate-docs:
+    name: Generate Docs
+    if: startsWith(github.ref, 'refs/heads/main')
+    runs-on: ubuntu-latest
+    environment: generation
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install Generator
+        uses: rawnly/github-actions-autodocs@main
+      - name: Setup Git
+        id: git
+        uses: aquacloud-dev/github-actions/setup-git@main
+        with:
+          BOT_ID: ${{ secrets.BOT_ID }}
+          BOT_PEM: ${{ secrets.BOT_PEM }}
+      - name: Generate
+        shell: bash
+        run: |
+          for dir in */; do 
+            if [ -d "$dir" ]; then 
+              echo "Generating on $dir action.yml"
+
+              cd "$dir" || exit 
+              github-actions-autodocs 
+
+              cd ..
+            fi
+          done
+      - name: Commit
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ steps.git.outputs.token }}
+        run: |
+          git add -A .
+          git commit -m 'docs: readme'
+          git push origin ${{ github.ref }}
