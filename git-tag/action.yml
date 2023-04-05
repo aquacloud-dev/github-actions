@@ -1,17 +1,26 @@
 name: "Git Tag"
-description: "Git Tag"
+description: "Push a git tag"
 
 inputs:
   tag:
     description: "TAG"
     required: true
 
+outputs:
+  released:
+    description: "Wether the tag has been published or not"
+    value: ${{ steps.tag.outputs.released }}
+
 runs:
   using: composite
   steps:
     - name: "Git Tag"
+      id: tag
       shell: bash
       run: |
         TAG="${{ inputs.tag }}"
+
         git tag $TAG -m "Release $TAG"
         git push origin $TAG
+
+        echo "released=true" >> $GITHUB_OTUPUT
