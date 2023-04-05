@@ -25,4 +25,8 @@ runs:
           BUILD_NUMBER=$(( BUILD_NUMBER + 1 ))
         fi
 
-        echo "tag=$BRANCH_NAME.$BUILD_NUMBER" >> $GITHUB_OUTPUT
+        TAG="$BRANCH_NAME.$BUILD_NUMBER"
+
+        echo "TAG=$TAG"
+
+        echo "tag=$TAG" >> $GITHUB_OUTPUT
