@@ -1,7 +1,19 @@
+
 # Release
+> Release branch
 
-This actions is a mix of
 
-- `semantic-release`
-- `git-tag`
-- `get-build-number`
+## Inputs
+| Name | Description | Default | Required | 
+| ---- | ----------- | ------- | -------- |
+| `run-semantic` | Wether to run semantic-release or not | false | `false` |
+
+
+
+## Outputs 
+| Name | Description |
+| ---- | ----------- |
+| `version` | Released version |
+| `released` | A boolean indicating wether the version has been released or not |
+
+        

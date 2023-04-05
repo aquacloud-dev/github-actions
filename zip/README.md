@@ -7,8 +7,8 @@
 | Name | Description | Default | Required | 
 | ---- | ----------- | ------- | -------- |
 | `context` | Working Directory | . | `false` |
-| `files` | Files to zip | `nd` | `true` |
 | `output` | Zip filename (NO EXTENSION) | `nd` | `true` |
+| `files` | Files to zip | `nd` | `true` |
 
 
 

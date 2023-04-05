@@ -1,9 +1,19 @@
-# Usage
 
-```yml
-- name: Setup GIT
-  uses: aquacloud-dev/github-actions/setup-git
-  with:
-    BOT_PEM: ${{ secrets.APP_PEM }}
-    BOT_ID: ${{ secrets.APP_ID }}
-```
+# Setup Git
+> Setup Git
+
+
+## Inputs
+| Name | Description | Default | Required | 
+| ---- | ----------- | ------- | -------- |
+| `BOT_ID` | The ID of the github-app | `nd` | `true` |
+| `BOT_PEM` | The bot PEM in base64 | `nd` | `true` |
+
+
+
+## Outputs 
+| Name | Description |
+| ---- | ----------- |
+| `token` | The github-token for the bot |
+
+        
