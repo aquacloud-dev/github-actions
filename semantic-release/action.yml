@@ -1,0 +1,17 @@
+name: "Semantic Release"
+description: "Semantic Release"
+
+outputs:
+  version:
+    description: "version released"
+    value: ${{ steps.release.outputs.release-version }}
+  released:
+    description: "Wether a new version has been released or not"
+    value: ${{ steps.release.outputs.published }}
+
+runs:
+  using: composite
+  steps:
+    - name: Semantic Release
+      id: release
+      uses: ahmadnassri/action-semantic-release@v2
