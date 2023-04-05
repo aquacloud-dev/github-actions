@@ -19,6 +19,9 @@ runs:
         BRANCH_NAME=${BRANCH_NAME//\//-}
         BUILD_NUMBER=$(git tag | sort --version-sort | grep "$BRANCH_NAME" | tail -n 1 | awk -F. '{print $2}')
 
+        # Trim
+        BUILD_NUMBER=$(echo "${BUILD_NUMBER}" | xargs echo -n)
+
         if [ -z "$BUILD_NUMBER" ]; then 
           BUILD_NUMBER=1
         else
