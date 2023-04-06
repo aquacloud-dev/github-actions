@@ -1,20 +1,12 @@
 name: "Get Build Number"
 description: "Get Build Number"
 
+author: "Federico Vitale <federico.vitale@aquacloud.it>"
+
 outputs:
   tag:
     description: "Next Tag"
-    value: ${{ steps.next-number.outputs.tag }}
 
 runs:
-  using: composite
-  steps:
-    - id: next-number
-      name: Get Build Number
-      shell: bash
-      run: |
-        set -e -o noglob
-
-        tag=$(./${{github.action_path}}/script.sh)
-
-        echo "tag=$tag" >> $GITHUB_OUTPUT
+  using: "docker"
+  image: "Dockerfile"
