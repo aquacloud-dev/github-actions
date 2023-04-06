@@ -1,6 +1,8 @@
 name: Validate Action Schema
 
-on: [push]
+on:
+  push:
+  workflow_dispatch:
 
 defaults:
   run:
@@ -24,16 +26,7 @@ jobs:
       - name: Lint Actions
         shell: bash
         run: |
-          for dir in */; do 
-            if [ -d "$dir" ]; then 
-              echo "Linting on $dir/action.yml"
-
-              cd "$dir" || exit 
-              action-validator action.yml
-
-              cd ..
-            fi
-          done
+          ./${{ github.action_path }}/lint.sh
 
   generate-docs:
     name: Generate Docs
@@ -46,29 +39,23 @@ jobs:
       - name: Install Generator
         uses: rawnly/github-actions-autodocs@main
       - name: Setup Git
-        id: git
+        id: identity
         uses: aquacloud-dev/github-actions/setup-git@main
+      - name: Get Bot Token
+        id: bot
+        uses: aquacloud-dev/github-actions/get-bot-token@main
         with:
           BOT_ID: ${{ secrets.BOT_ID }}
           BOT_PEM: ${{ secrets.BOT_PEM }}
       - name: Generate
         shell: bash
         run: |
-          for dir in */; do 
-            if [ -d "$dir" ]; then 
-              echo "Generating on $dir action.yml"
-
-              cd "$dir" || exit 
-              github-actions-autodocs 
-
-              cd ..
-            fi
-          done
+          ./${{ github.action_path }}/generate.sh
       - name: Commit
-        shell: bash
+        id: commit
+        uses: aquacloud-dev/github-actions/git-commit@main
         env:
-          GITHUB_TOKEN: ${{ steps.git.outputs.token }}
-        run: |
-          git add -A .
-          git commit -m 'docs: readme'
-          git push origin ${{ github.ref }}
+          GITHUB_TOKEN: ${{ steps.bot.outputs.token }}
+        with:
+          message: "docs: README"
+          auto_resolve_conflicts: true
