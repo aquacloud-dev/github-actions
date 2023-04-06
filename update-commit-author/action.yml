@@ -8,6 +8,9 @@ inputs:
   repo:
     required: true
     description: "Repository <owner/name>"
+  test:
+    required: false
+    description: "this action is useless"
 
 runs:
   using: composite
