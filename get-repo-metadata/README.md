@@ -2,14 +2,11 @@
 # Get Repo Metadata
 > Retrive repository metadata
 
-
-## Inputs
-| Name | Description | Default | Required | 
-| ---- | ----------- | ------- | -------- |
-
-
+## Inputs 
+> No inputs
 
 ## Outputs 
+
 | Name | Description |
 | ---- | ----------- |
 | `metadata` | Repository metadata |

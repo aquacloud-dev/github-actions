@@ -2,14 +2,11 @@
 # Get Build Number
 > Get Build Number
 
-
-## Inputs
-| Name | Description | Default | Required | 
-| ---- | ----------- | ------- | -------- |
-
-
+## Inputs 
+> No inputs
 
 ## Outputs 
+
 | Name | Description |
 | ---- | ----------- |
 | `tag` | Next Tag |

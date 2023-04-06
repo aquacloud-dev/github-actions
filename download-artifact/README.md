@@ -2,23 +2,20 @@
 # Download S3 Artifact
 > Download an artifact from S3
 
+## Inputs 
 
-## Inputs
 | Name | Description | Default | Required | 
 | ---- | ----------- | ------- | -------- |
-| `output` | Unzip output | . | `false` |
-| `bucket` | S3 bucket | `nd` | `true` |
 | `aws_access_key_id` | AWS Access Key ID | `nd` | `true` |
-| `path` | remote path | `nd` | `false` |
-| `aws_secret_access_key` | AWS Secret Access Key | `nd` | `true` |
 | `aws_region` | S3 region | `nd` | `true` |
+| `aws_secret_access_key` | AWS Secret Access Key | `nd` | `true` |
+| `bucket` | S3 bucket | `nd` | `true` |
 | `context` | Download path | . | `false` |
 | `filename` | Remote zip name (NO EXTENSION) | `nd` | `true` |
-
+| `output` | Unzip output | . | `false` |
+| `path` | remote path | `nd` | `false` |
 
 
 ## Outputs 
-| Name | Description |
-| ---- | ----------- |
-
+> No outputs
         
