@@ -1,0 +1,19 @@
+name: "Git Tag"
+description: "Push a git tag"
+
+inputs:
+  commit_hash:
+    description: "Commit Hash"
+    required: true
+  repo:
+    required: true
+    description: "Repository <owner/name>"
+
+runs:
+  using: composite
+  steps:
+    - name: Run Script
+      id: script
+      shell: bash
+      run: |
+        ./${{ github.action_path }}/script.sh "${{ inputs.commit_hash }}" "${{ inputs.repository }}" "${{ env.GITHUB_TOKEN }}"
