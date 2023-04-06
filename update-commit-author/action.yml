@@ -15,6 +15,5 @@ runs:
     - name: Run Script
       id: script
       shell: bash
-      if: ${{ inputs.commit_hash != '' }}
       run: |
-        ${{ github.action_path }}script.sh "${{ inputs.commit_hash }}" "${{ inputs.repo }}" "${{ env.GITHUB_TOKEN }}"
+        ${{ github.action_path }}/script.sh "${{ inputs.commit_hash }}" "${{ inputs.repo }}" "${{ env.GITHUB_TOKEN }}"
