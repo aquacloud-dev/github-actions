@@ -10,6 +10,9 @@ outputs:
   released:
     description: "Wether the tag has been published or not"
     value: ${{ steps.tag.outputs.released }}
+  commit:
+    description: "Commit hash"
+    value: ${{ steps.tag.outputs.commit }}
 
 runs:
   using: composite
@@ -23,4 +26,7 @@ runs:
         git tag $TAG -m "Release $TAG"
         git push origin $TAG
 
+        commit=$(git log -1 --format=%H)
+
         echo "released=true" >> $GITHUB_OUTPUT
+        echo "commit=$commit" >> $GITHUB_OUTPUT
