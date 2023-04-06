@@ -67,6 +67,7 @@ jobs:
           auto_resolve_conflicts: true
       - name: Update commit author
         uses: aquacloud-dev/github-actions/update-commit-author@main
+        if: ${{ steps.commit.outputs.commit_hash != '' }}
         env:
           GITHUB_TOKEN: ${{ steps.bot.outputs.token }}
         with:
