@@ -3,7 +3,12 @@
 > Setup Git
 
 ## Inputs 
-> No inputs
+
+| Name | Description | Default | Required | 
+| ---- | ----------- | ------- | -------- |
+| `BOT_ID` | Your App ID | `nd` | `true` |
+| `BOT_NAME` | Your GH App name | aquacloud-bot | `false` |
+
 
 ## Outputs 
 
