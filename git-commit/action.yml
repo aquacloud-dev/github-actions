@@ -1,0 +1,44 @@
+name: "Git Commit"
+
+description: "Git commit"
+
+inputs:
+  message:
+    description: "Commit message"
+  auto_resolve_conflicts:
+    description: "Use '-X ours' on rebase"
+    required: false
+
+outputs:
+  commit_hash:
+    description: "Commit Hash"
+    value: ${{ steps.commit.outputs.hash }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup GIT
+      id: identity
+      uses: aquacloud-dev/github-actions/setup-git@main
+    - name: Commit
+      id: commit
+      shell: bash
+      run: |
+        if ! [[ -z $(git status -s .) ]]; then 
+          git add .
+          git status .
+          git commit --message "${{ inputs.message }}"
+
+          branch=$(git rev-parse --abbrev-ref HEAD)
+          git_conflicts="" && [[ "${{ inputs.auto_resolve_conflicts }}" == true ]] && git_conflicts="-X ours"
+
+          git fetch origin $branch
+          git rebase origin/$branch $git_conflicts
+          git push -u origin $branch
+
+          hash=$(git log -1 --format=%H)
+
+          echo "hash=$hash" >> $GITHUB_OUTPUT
+        else
+          echo "No changes, skipping sync."
+        fi
