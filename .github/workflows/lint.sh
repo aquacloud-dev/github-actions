@@ -4,7 +4,7 @@ set -e -x
 
 for dir in */; do
 	if [ -d "$dir" ]; then
-		printf "Linting on %s/action.yml" "$dir"
+		printf "Linting on %s/action.yml\n" "$dir"
 
 		cd "$dir" || exit
 

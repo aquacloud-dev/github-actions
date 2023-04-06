@@ -4,7 +4,7 @@ set -e
 
 for dir in */; do
 	if [ -d "$dir" ]; then
-		printf "Generating docs for %s/action.yml" "$dir"
+		printf "Generating docs for %s/action.yml\n" "$dir"
 
 		cd "$dir" || exit
 
