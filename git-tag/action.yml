@@ -10,7 +10,7 @@ outputs:
   released:
     description: "Wether the tag has been published or not"
     value: ${{ steps.tag.outputs.released }}
-  commit:
+  commit_hash:
     description: "Commit hash"
     value: ${{ steps.tag.outputs.commit }}
 
