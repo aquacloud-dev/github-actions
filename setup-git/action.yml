@@ -2,10 +2,10 @@ name: "Setup Git"
 description: "Setup Git"
 
 inputs:
-  BOT_NAME:
+  bot-name:
     required: true
     description: "Your GH App name"
-  BOT_ID:
+  bot-id:
     required: true
     description: "Your App ID"
 
@@ -24,8 +24,8 @@ runs:
       id: identity
       shell: bash
       run: |
-        username="${{inputs.BOT_NAME}}[bot]"
-        email="${{inputs.BOT_ID}}+${username}@users.noreply.github.com"
+        username="${{ inputs.bot-name }}[bot]"
+        email="${{ inputs.bot-id }}+${username}@users.noreply.github.com"
 
         git config --global user.name "$username"
         git config --global user.email "$email"
