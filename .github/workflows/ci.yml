@@ -47,8 +47,8 @@ jobs:
         id: identity
         uses: aquacloud-dev/github-actions/setup-git@main
         with:
-          BOT_NAME: "aquacloud-bot"
-          BOT_ID: ${{ secrets.BOT_ID }}
+          BOT_NAME: ${{ secrets.APP_NAME }}
+          BOT_ID: ${{ secrets.APP_ID }}
 
       - name: Generate
         shell: bash
