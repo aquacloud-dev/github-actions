@@ -7,7 +7,7 @@
 | Name | Description | Default | Required | 
 | ---- | ----------- | ------- | -------- |
 | `BOT_ID` | Your App ID | `nd` | `true` |
-| `BOT_NAME` | Your GH App name | aquacloud-bot | `false` |
+| `BOT_NAME` | Your GH App name | `nd` | `true` |
 
 
 ## Outputs 
