@@ -26,7 +26,7 @@ jobs:
       - name: Lint Actions
         shell: bash
         run: |
-          ./${{ github.action_path }}/lint.sh
+          ./${{ github.action_path }}lint.sh
 
   generate-docs:
     name: Generate Docs
@@ -50,7 +50,7 @@ jobs:
       - name: Generate
         shell: bash
         run: |
-          ./${{ github.action_path }}/generate.sh
+          ./${{ github.action_path }}generate.sh
       - name: Commit
         id: commit
         uses: aquacloud-dev/github-actions/git-commit@main
