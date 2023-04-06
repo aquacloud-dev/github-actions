@@ -59,3 +59,10 @@ jobs:
         with:
           message: "docs: README"
           auto_resolve_conflicts: true
+      - name: Update commit author
+        uses: aquacloud-dev/github-actions/update-commit-author@main
+        env:
+          GITHUB_TOKEN: ${{ steps.bot.outputs.token }}
+        with:
+          repo: aquacloud-dev/github-actions
+          commit_hash: ${{ steps.commit.outputs.commit_hash }}
