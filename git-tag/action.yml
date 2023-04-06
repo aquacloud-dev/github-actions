@@ -23,4 +23,4 @@ runs:
         git tag $TAG -m "Release $TAG"
         git push origin $TAG
 
-        echo "released=true" >> $GITHUB_OTUPUT
+        echo "released=true" >> $GITHUB_OUTPUT
