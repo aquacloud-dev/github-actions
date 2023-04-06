@@ -2,6 +2,9 @@ name: Validate Action Schema
 
 on:
   push:
+    paths-ignore:
+      - "README.md"
+      - ".github/workflows"
   workflow_dispatch:
 
 defaults:
