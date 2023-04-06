@@ -8,8 +8,8 @@
 | ---- | ----------- | ------- | -------- |
 | `image_name` | Image name | ${{ github.event.repository.name }} | `false` |
 | `manifest_version` | Manifest version (package.json, pom.xml etc) | `nd` | `true` |
-| `registry` | Docker registry | `nd` | `true` |
 | `context` | Context directory | . | `false` |
+| `registry` | Docker registry | `nd` | `true` |
 
 
 
