@@ -28,6 +28,7 @@ jobs:
         env:
           GITHUB_WORKSPACE: $GITHUB_WORKSPACE
         run: |
+          set -e -o noglob
           ${{ github.action_path }}/lint.sh
 
   generate-docs:
@@ -54,6 +55,7 @@ jobs:
         env:
           GITHUB_WORKSPACE: $GITHUB_WORKSPACE
         run: |
+          set -e -o noglob
           ${{ github.action_path }}/generate.sh
       - name: Commit
         id: commit

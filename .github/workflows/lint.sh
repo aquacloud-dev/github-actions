@@ -1,8 +1,10 @@
 #!/bin/bash
 
+set -e -o noglob
+
 for dir in */; do
 	if [ -d "$dir" ]; then
-		echo "Linting on $dir/action.yml" | sed 's,//,/,g'
+		printf "Linting on %s/action.yml" "$dir"
 
 		cd "$dir" || exit
 

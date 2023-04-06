@@ -1,8 +1,10 @@
 #!/bin/bash
 
+set -e -o noglob
+
 for dir in */; do
 	if [ -d "$dir" ]; then
-		echo "Generating docs for $dir/action.yml" | sed 's,//,/,g'
+		printf "Generating docs for %s/action.yml" "$dir"
 
 		cd "$dir" || exit
 
