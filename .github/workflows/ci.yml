@@ -28,8 +28,15 @@ jobs:
         env:
           GITHUB_WORKSPACE: $GITHUB_WORKSPACE
         run: |
-          set -e
-          ${{ github.action_path }}/lint.sh
+          set -e -x
+
+          path="${{ github.action_path }}"
+
+          if [ -z "$path" ]; then 
+            path="."
+          fi
+
+          $path/lint.sh
 
   generate-docs:
     name: Generate Docs
@@ -55,8 +62,15 @@ jobs:
         env:
           GITHUB_WORKSPACE: $GITHUB_WORKSPACE
         run: |
-          set -e
-          ${{ github.action_path }}/generate.sh
+          set -e -x
+
+          path="${{ github.action_path }}"
+
+          if [ -z "$path" ]; then 
+            path="."
+          fi
+
+          $path/generate.sh
       - name: Commit
         id: commit
         uses: aquacloud-dev/github-actions/git-commit@main
