@@ -1,0 +1,45 @@
+name: "Docker Build"
+description: "An action to perform docker build"
+
+inputs:
+  tags:
+    description: "Tags to build"
+    required: true
+  build-args:
+    description: "Build args"
+  push:
+    description: "Wether to push the docker image or nto"
+    default: "true"
+  registry-url:
+    description: "Registry URL"
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Get Metadata
+      id: repo
+      uses: aquacloud-dev/github-actions/get-repo-metadata@main
+    - name: Setup QEMU
+      uses: docker/setup-qemu-action@v2
+    - name: Setup Buildx
+      uses: docker/setup-buildx-action@v2
+    - name: Docker Login
+      uses: docker/login-action@v2
+      with:
+        registry: ${{ inputs.registry-url }}
+    - name: Build Docker Image
+      uses: docker/build-push-action@v4
+      with:
+        push: ${{ inputs.push == 'true' }}
+        tags: ${{ inputs.tags }}
+        build-args: ${{ inputs.build-args }}
+        labels: |
+          org.opencontainers.image.title=${{ steps.repo.outputs.result.name }}
+          org.opencontainers.image.description=${{ steps.repo.outputs.result.description }}
+          org.opencontainers.image.url=${{ steps.repo.outputs.result.html_url }}
+          org.opencontainers.image.source=${{ steps.repo.outputs.result.clone_url }}
+          org.opencontainers.image.version=${{ steps.prep.outputs.version }}
+          org.opencontainers.image.created=${{ steps.prep.outputs.created }}
+          org.opencontainers.image.revision=${{ github.sha }}
+          org.opencontainers.image.licenses=${{ steps.repo.outputs.result.license.spdx_id }}
