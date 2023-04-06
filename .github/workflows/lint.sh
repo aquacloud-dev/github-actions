@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e -o noglob
+set -e
 
 for dir in */; do
 	if [ -d "$dir" ]; then
