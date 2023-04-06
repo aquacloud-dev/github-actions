@@ -1,10 +1,10 @@
 #!/bin/bash
 
-set -e -x
+set -e
 
 for dir in */; do
 	if [ -d "$dir" ]; then
-		printf "Linting on %s/action.yml\n" "$dir"
+		printf "Linting on %s/action.yml\n" "$dir" | sed 's,//,/,g'
 
 		cd "$dir" || exit
 
