@@ -12,7 +12,7 @@
 ## Outputs 
 | Name | Description |
 | ---- | ----------- |
-| `version` | version released |
 | `released` | Wether a new version has been released or not |
+| `version` | version released |
 
         
