@@ -10,8 +10,9 @@ inputs:
     required: true
     description: "Version to release"
   repo:
-    required: true
-    description: "Repository"
+    description: "Target Repository"
+    required: false
+    default: "aquacloud-dev/helm"
   commit_user_email:
     description: "Commit Email"
     required: false
@@ -59,7 +60,7 @@ runs:
       env:
         API_TOKEN_GITHUB: ${{ inputs.token }}
       with:
-        destination_repo: "aquacloud-dev/helm"
+        destination_repo: ${{ inputs.repo }}
         source_file: helm/${{ github.event.repository.name }}-${{ inputs.version }}.tgz
         user_email: ${{ inputs.commit_user_email }}
         user_name: ${{ inputs.commit_user_name }}
