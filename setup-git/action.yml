@@ -3,9 +3,8 @@ description: "Setup Git"
 
 inputs:
   BOT_NAME:
-    required: false
+    required: true
     description: "Your GH App name"
-    default: "aquacloud-bot"
   BOT_ID:
     required: true
     description: "Your App ID"
@@ -25,13 +24,11 @@ runs:
       id: identity
       shell: bash
       run: |
-        bot_name="${{ inputs.BOT_NAME }}"
-        username="$bot_name[bot]"
-        bot_id="${{ inputs.BOT_ID }}"
-        email="$bot_id+$username@users.noreply.github.com"
+        username="${{inputs.BOT_NAME}}[bot]"
+        email="${{inputs.BOT_ID}}+${username}@users.noreply.github.com"
 
-        git config --global user.email "$email"
         git config --global user.name "$username"
+        git config --global user.email "$email"
 
         echo "username=$username" >> $GITHUB_OUTPUT
         echo "email=$email" >> $GITHUB_OUTPUT
