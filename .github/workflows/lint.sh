@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -e -x
 
 for dir in */; do
 	if [ -d "$dir" ]; then
