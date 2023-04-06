@@ -6,14 +6,14 @@
 ## Inputs
 | Name | Description | Default | Required | 
 | ---- | ----------- | ------- | -------- |
+| `context` | Context directory | . | `false` |
 | `aws_access_key_id` | AWS Access Key ID | `nd` | `true` |
-| `source` | Source files/directoreis | `nd` | `true` |
 | `aws_secret_access_key` | AWS Secret Access Key | `nd` | `true` |
 | `aws_region` | S3 region | `nd` | `true` |
-| `bucket` | S3 bucket | `nd` | `true` |
 | `path` | S3 path |  | `false` |
-| `context` | Context directory | . | `false` |
+| `source` | Source files/directoreis | `nd` | `true` |
 | `filename` | filename of the zip (NO EXTENSION) | `nd` | `false` |
+| `bucket` | S3 bucket | `nd` | `true` |
 
 
 

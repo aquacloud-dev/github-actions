@@ -6,8 +6,8 @@
 ## Inputs
 | Name | Description | Default | Required | 
 | ---- | ----------- | ------- | -------- |
-| `BOT_ID` | The ID of the github-app | `nd` | `true` |
 | `BOT_PEM` | The bot PEM in base64 | `nd` | `true` |
+| `BOT_ID` | The ID of the github-app | `nd` | `true` |
 
 
 
