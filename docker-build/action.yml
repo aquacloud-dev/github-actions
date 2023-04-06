@@ -7,9 +7,11 @@ inputs:
     required: true
   build-args:
     description: "Build args"
+    required: false
   push:
     description: "Wether to push the docker image or nto"
     default: "true"
+    required: false
   registry-url:
     description: "Registry URL"
     required: true
