@@ -1,5 +1,5 @@
-name: "Git Tag"
-description: "Push a git tag"
+name: "Update commit author"
+description: "Given commit hash, update the author to the owner of the current GITHUB_TOKEN"
 
 inputs:
   commit_hash:
@@ -15,5 +15,6 @@ runs:
     - name: Run Script
       id: script
       shell: bash
+      if: ${{ inputs.commit_hash != '' }}
       run: |
-        ./${{ github.action_path }}/script.sh "${{ inputs.commit_hash }}" "${{ inputs.repo }}" "${{ env.GITHUB_TOKEN }}"
+        ${{ github.action_path }}script.sh "${{ inputs.commit_hash }}" "${{ inputs.repo }}" "${{ env.GITHUB_TOKEN }}"
