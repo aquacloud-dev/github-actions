@@ -8,6 +8,7 @@
 | ---- | ----------- | ------- | -------- |
 | `commit_hash` | Commit Hash | `nd` | `true` |
 | `repo` | Repository <owner/name> | `nd` | `true` |
+| `test` | this action is useless | `nd` | `false` |
 
 
 ## Outputs 
