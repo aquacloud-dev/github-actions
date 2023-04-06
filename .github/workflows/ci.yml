@@ -39,17 +39,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
       - name: Install Generator
         uses: rawnly/github-actions-autodocs@main
+
       - name: Setup Git
         id: identity
         uses: aquacloud-dev/github-actions/setup-git@main
-      - name: Get Bot Token
-        id: bot
-        uses: aquacloud-dev/github-actions/get-bot-token@main
         with:
+          BOT_NAME: "aquacloud-bot"
           BOT_ID: ${{ secrets.BOT_ID }}
-          BOT_PEM: ${{ secrets.BOT_PEM }}
+
       - name: Generate
         shell: bash
         env:
@@ -57,19 +57,12 @@ jobs:
         run: |
           set -e 
           .github/workflows/generate.sh
+
       - name: Commit
         id: commit
         uses: aquacloud-dev/github-actions/git-commit@main
         env:
           GITHUB_TOKEN: ${{ steps.bot.outputs.token }}
         with:
-          message: "docs: README"
+          message: "[skip ci] Updated Readme"
           auto_resolve_conflicts: true
-      - name: Update commit author
-        uses: aquacloud-dev/github-actions/update-commit-author@main
-        if: ${{ steps.commit.outputs.commit_hash != '' }}
-        env:
-          GITHUB_TOKEN: ${{ steps.bot.outputs.token }}
-        with:
-          repo: ${{ github.repository_owner }}/${{ github.event.repository.name }}
-          commit_hash: ${{ steps.commit.outputs.commit_hash }}
