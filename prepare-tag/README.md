@@ -17,7 +17,7 @@
 | Name | Description |
 | ---- | ----------- |
 | `tags` | List of docker tags |
-| `manifest_version` | List of maven version |
 | `version` | List of docker version |
+| `manifest_version` | List of maven version |
 
         
