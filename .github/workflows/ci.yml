@@ -28,7 +28,7 @@ jobs:
         env:
           GITHUB_WORKSPACE: $GITHUB_WORKSPACE
         run: |
-          set -e -x
+          set -e
           .github/workflows/lint.sh
 
   generate-docs:
@@ -55,7 +55,7 @@ jobs:
         env:
           GITHUB_WORKSPACE: $GITHUB_WORKSPACE
         run: |
-          set -e -x
+          set -e 
           .github/workflows/generate.sh
       - name: Commit
         id: commit
