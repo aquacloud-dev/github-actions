@@ -3,6 +3,9 @@ description: "Update version and release helm package"
 author: "Federico Vitale <federico.vitale@aquacloud.it>"
 
 inputs:
+  token:
+    description: "Github Token"
+    required: true
   version:
     required: true
     description: "Version to release"
@@ -17,9 +20,6 @@ inputs:
     description: "Commit username"
     required: false
     default: "Aquacloud Bot"
-  token:
-    description: "Github Token"
-    required: true
 
 runs:
   using: composite
@@ -31,24 +31,14 @@ runs:
         token: ${{ inputs.token }}
 
     - name: Helm Repository Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
-        repository: ${{ inputs.repo }}
+        repository: aquacloud-dev/helm
         token: ${{ inputs.token }}
         fetch-depth: 0
         persist-credentials: true
         ref: main
         path: helm
-
-    - name: Update Chart.version
-      uses: fjogeleit/yaml-update-action@main
-      with:
-        commitChange: false
-        valueFile: ".chart/Chart.yaml"
-        propertyPath: "version"
-        value: ${{ inputs.version }}
-        message: "Update chart version to ${{ github.event.inputs.version }}"
-        updateFile: true
 
     - name: Update Chart.appVersion
       uses: fjogeleit/yaml-update-action@main
@@ -57,19 +47,19 @@ runs:
         valueFile: ".chart/Chart.yaml"
         propertyPath: "appVersion"
         value: ${{ inputs.version }}
-        message: "Update chart version to ${{ github.event.inputs.version }}"
+        message: "Update chart appVersion to ${{ inputs.version }}"
         updateFile: true
 
     - name: Helm Package
-      run: helm package .chart -d helm
       shell: bash
+      run: helm package .chart -d helm
 
     - name: Helm Push
       uses: dmnemec/copy_file_to_another_repo_action@main
       env:
         API_TOKEN_GITHUB: ${{ inputs.token }}
       with:
-        destination_repo: ${{ inputs.repo }}
-        source_file: helm/${{ github.event.repository.name }}-${{ github.event.inputs.version }}.tgz
+        destination_repo: "aquacloud-dev/helm"
+        source_file: helm/${{ github.event.repository.name }}-${{ inputs.version }}.tgz
         user_email: ${{ inputs.commit_user_email }}
         user_name: ${{ inputs.commit_user_name }}
