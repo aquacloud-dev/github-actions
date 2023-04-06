@@ -30,6 +30,9 @@ jobs:
         run: |
           set -e -x
 
+          ls -a
+          pwd
+
           path="${{ github.action_path }}"
 
           if [ -z "$path" ]; then 
@@ -63,6 +66,9 @@ jobs:
           GITHUB_WORKSPACE: $GITHUB_WORKSPACE
         run: |
           set -e -x
+
+          ls -a
+          pwd
 
           path="${{ github.action_path }}"
 
