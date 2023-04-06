@@ -1,6 +1,6 @@
 
-# Git Tag
-> Push a git tag
+# Update commit author
+> Given commit hash, update the author to the owner of the current GITHUB_TOKEN
 
 ## Inputs 
 
