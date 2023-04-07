@@ -1,9 +1,10 @@
-#!/bin/bash
+#!/bin/sh
+
 # @see https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions
 # @see https://github.com/orgs/community/discussions/25939
 
 BRANCH_NAME=${GITHUB_REF##*/}
-BRANCH_NAME=${BRANCH_NAME//\//-}
+BRANCH_NAME=$(echo "$BRANCH_NAME" | sed 's/\//-/g')
 
 if [ -z "$BRANCH_NAME" ]; then
 	echo "::error::Could not retrive branch name"
@@ -23,4 +24,4 @@ TAG="${BRANCH_NAME}.${BUILD_NUMBER}"
 
 echo "::notice::TAG=${TAG}"
 
-echo "$TAG"
+echo "tag=$TAG" >>$GITHUB_OUTPUT
