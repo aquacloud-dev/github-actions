@@ -9,7 +9,7 @@ inputs:
   bot-id:
     required: false
     description: "Your App ID"
-    default: 41898282
+    default: "41898282"
 
 outputs:
   email:
