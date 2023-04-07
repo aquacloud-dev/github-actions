@@ -1,5 +1,5 @@
 from alpine:latest
 
-COPY entrypoint.sh /entrypoint.sh
+COPY get-build-number/entrypoint.sh /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
