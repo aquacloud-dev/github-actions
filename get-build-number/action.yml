@@ -32,12 +32,6 @@ runs:
 
         echo "::notice::BUILD_NUMBER=${BUILD_NUMBER}"
 
-        if [ -z "$BUILD_NUMBER" ]; then
-          BUILD_NUMBER=1
-        else 
-          BUILD_NUMBER=$(( BUILD_NUMBER + 1))
-        fi
-
         TAG="${BRANCH_NAME}.${BUILD_NUMBER}"
 
         echo "::notice::TAG=${TAG}"
