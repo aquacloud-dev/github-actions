@@ -3,6 +3,8 @@
 # @see https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions
 # @see https://github.com/orgs/community/discussions/25939
 
+set -x
+
 BRANCH_NAME=${GITHUB_REF##*/}
 BRANCH_NAME=$(echo "$BRANCH_NAME" | sed 's/\//-/g')
 
@@ -14,9 +16,13 @@ fi
 echo "::notice::BRANCH_NAME=$BRANCH_NAME"
 
 BUILD_NUMBER=$(git tag | sort --version-sort)
+echo "::debug::BUILD_NUMBER=${BUILD_NUMBER}"
 BUILD_NUMBER=$(echo "${BUILD_NUMBER}" | grep "$BRANCH_NAME" || true)
+echo "::debug::BUILD_NUMBER=${BUILD_NUMBER}"
 BUILD_NUMBER=$(echo "${BUILD_NUMBER}" | tail -n 1 | awk -F. '{n=$2+1 print n}')
+echo "::debug::BUILD_NUMBER=${BUILD_NUMBER}"
 BUILD_NUMBER=$(echo "${BUILD_NUMBER}" | xargs echo -n)
+echo "::debug::BUILD_NUMBER=${BUILD_NUMBER}"
 
 echo "::notice::BUILD_NUMBER=${BUILD_NUMBER}"
 
