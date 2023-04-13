@@ -1,35 +1,44 @@
 name: "Get Build Number"
 description: "Get Build Number"
 
-author: "Federico Vitale <federico.vitale@aquacloud.it>"
-
 outputs:
   tag:
     description: "Next Tag"
-    value: ${{ steps.tag.outputs.tag }}
+    value: ${{ steps.next-number.outputs.tag }}
 
 runs:
   using: composite
   steps:
-    - id: tag
-      shell: bash 
+    - id: next-number
+      name: Get Build Number
+      shell: bash
       run: |
-        branch=${GITHUB_REF##*/}
-        branch=${echo "$branch" | sed 's/\/+/-/g' }
+        set -e
 
-        if [ -z "$branch" ]; then 
+        BRANCH_NAME=${GITHUB_REF##*/}
+        BRANCH_NAME=${BRANCH_NAME//\//-}
+
+        if [ -z "$BRANCH_NAME" ]; then
           echo "::error::Could not retrive branch name"
           exit 1
         fi
 
-        echo "::notice::branch_name=$branch"
+        echo "::notice::BRANCH_NAME=$BRANCH_NAME"
 
-        suffix=$(git tag | sort --version-sort)
-        suffix=$(echo "$suffix" | grep "$branch" || true)
-        suffix=$(echo "$suffix" | tail -n 1 | awk -F. '{n=$2+1 print n}' )
-        suffix=$(echo "$suffix" | xargs echo -n)
+        BUILD_NUMBER=$(git tag | sort --version-sort)
+        BUILD_NUMBER=$(echo "${BUILD_NUMBER}" | grep "$BRANCH_NAME" || true)
+        BUILD_NUMBER=$(echo "${BUILD_NUMBER}" | tail -n 1 | awk -F. '{n=$2+1 print n}')
+        BUILD_NUMBER=$(echo "${BUILD_NUMBER}" | xargs echo -n)
 
-        echo "::notice::build_number=$suffix"
+        echo "::notice::BUILD_NUMBER=${BUILD_NUMBER}"
 
-        tag="${branch}.${suffix}"
-        echo "tag=$tag" >> $GITHUB_OUTPUT
+        if [ -z "$BUILD_NUMBER" ]; then
+          BUILD_NUMBER=1
+        else 
+          BUILD_NUMBER=$(( BUILD_NUMBER + 1))
+        fi
+
+        TAG="${BRANCH_NAME}.${BUILD_NUMBER}"
+
+        echo "::notice::TAG=${TAG}"
+        echo "tag=$TAG" >>$GITHUB_OUTPUT
