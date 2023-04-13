@@ -27,7 +27,7 @@ runs:
 
         BUILD_NUMBER=$(git tag | sort --version-sort)
         BUILD_NUMBER=$(echo "${BUILD_NUMBER}" | grep "$BRANCH_NAME" || true)
-        BUILD_NUMBER=$(echo "${BUILD_NUMBER}" | tail -n 1 | awk -F. '{n=$2+1 print n}')
+        BUILD_NUMBER=$(echo "${BUILD_NUMBER}" | tail -n 1 | awk -F. '{print $2+1}')
         BUILD_NUMBER=$(echo "${BUILD_NUMBER}" | xargs echo -n)
 
         echo "::notice::BUILD_NUMBER=${BUILD_NUMBER}"
