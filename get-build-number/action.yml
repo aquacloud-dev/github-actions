@@ -6,7 +6,30 @@ author: "Federico Vitale <federico.vitale@aquacloud.it>"
 outputs:
   tag:
     description: "Next Tag"
+    value: ${{ steps.tag.outputs.tag }}
 
 runs:
-  using: "docker"
-  image: "Dockerfile"
+  using: composite
+  steps:
+    - id: tag
+      shell: bash 
+      run: |
+        branch=${GITHUB_REF##*/}
+        branch=${echo "$branch" | sed 's/\/+/-/g' }
+
+        if [ -z "$branch" ]; then 
+          echo "::error::Could not retrive branch name"
+          exit 1
+        fi
+
+        echo "::notice::branch_name=$branch"
+
+        suffix=$(git tag | sort --version-sort)
+        suffix=$(echo "$suffix" | grep "$branch" || true)
+        suffix=$(echo "$suffix" | tail -n 1 | awk -F. '{n=$2+1 print n}' )
+        suffix=$(echo "$suffix" | xargs echo -n)
+
+        echo "::notice::build_number=$suffix"
+
+        tag="${branch}.${suffix}"
+        echo "tag=$tag" >> $GITHUB_OUTPUT
