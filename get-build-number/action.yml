@@ -25,14 +25,16 @@ runs:
 
         echo "::notice::BRANCH_NAME=$BRANCH_NAME"
 
-        BUILD_NUMBER=$(git tag | sort --version-sort)
-        BUILD_NUMBER=$(echo "${BUILD_NUMBER}" | grep "$BRANCH_NAME" || true)
+        LAST_TAG=$(git tag | sort --version-sort)
+        echo "::notice::LAST_TAG=$LAST_TAG"
+
+        BUILD_NUMBER=$(echo "${LAST_TAG}" | grep "-$BRANCH_NAME" || true)
         BUILD_NUMBER=$(echo "${BUILD_NUMBER}" | tail -n 1 | awk -F. '{print $2+1}')
         BUILD_NUMBER=$(echo "${BUILD_NUMBER}" | xargs echo -n)
 
         echo "::notice::BUILD_NUMBER=${BUILD_NUMBER}"
 
-        TAG="${BRANCH_NAME}.${BUILD_NUMBER}"
+        TAG="${LAST_TAG}-${BRANCH_NAME}.${BUILD_NUMBER}"
 
         echo "::notice::TAG=${TAG}"
         echo "tag=$TAG" >>$GITHUB_OUTPUT
