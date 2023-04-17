@@ -7,7 +7,7 @@
 | Name | Description | Default | Required | 
 | ---- | ----------- | ------- | -------- |
 | `node-version` | Node Version | 18 | `false` |
-| `pnpm-version` | PNPM Version | 7 | `false` |
+| `pnpm-version` | PNPM Version | 8 | `false` |
 
 
 ## Outputs 
