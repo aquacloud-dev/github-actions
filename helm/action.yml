@@ -51,6 +51,16 @@ runs:
         message: "Update chart appVersion to ${{ inputs.version }}"
         updateFile: true
 
+    - name: Update Chart.appVersion
+      uses: fjogeleit/yaml-update-action@main
+      with:
+        commitChange: false
+        valueFile: ".chart/Chart.yaml"
+        propertyPath: "appVersion"
+        value: ${{ inputs.version }}
+        message: "Update chart appVersion to ${{ inputs.version }}"
+        updateFile: true
+
     - name: Helm Package
       shell: bash
       run: helm package .chart -d helm
