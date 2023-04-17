@@ -4,7 +4,7 @@ description: "Setup Node with PNPM + Cache"
 inputs:
   pnpm-version:
     description: "PNPM Version"
-    default: "7"
+    default: "8"
     required: false
   node-version:
     description: "Node Version"
