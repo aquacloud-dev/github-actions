@@ -46,9 +46,9 @@ runs:
       with:
         commitChange: false
         valueFile: ".chart/Chart.yaml"
-        propertyPath: "appVersion"
+        propertyPath: "version"
         value: ${{ inputs.version }}
-        message: "Update chart appVersion to ${{ inputs.version }}"
+        message: "Update chart version to ${{ inputs.version }}"
         updateFile: true
 
     - name: Update Chart.appVersion
