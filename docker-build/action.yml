@@ -2,6 +2,9 @@ name: "Docker Build"
 description: "An action to perform docker build"
 
 inputs:
+  labels:
+    description: "Docker labels"
+    required: false
   tags:
     description: "Tags to build"
     required: true
@@ -19,9 +22,6 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Get Metadata
-      id: repo
-      uses: aquacloud-dev/github-actions/get-repo-metadata@main
     - name: Setup QEMU
       uses: docker/setup-qemu-action@v2
     - name: Setup Buildx
@@ -36,12 +36,4 @@ runs:
         push: ${{ inputs.push == 'true' }}
         tags: ${{ inputs.tags }}
         build-args: ${{ inputs.build-args }}
-        labels: |
-          org.opencontainers.image.title=${{ steps.repo.outputs.result.name }}
-          org.opencontainers.image.description=${{ steps.repo.outputs.result.description }}
-          org.opencontainers.image.url=${{ steps.repo.outputs.result.html_url }}
-          org.opencontainers.image.source=${{ steps.repo.outputs.result.clone_url }}
-          org.opencontainers.image.version=${{ steps.prep.outputs.version }}
-          org.opencontainers.image.created=${{ steps.prep.outputs.created }}
-          org.opencontainers.image.revision=${{ github.sha }}
-          org.opencontainers.image.licenses=${{ steps.repo.outputs.result.license.spdx_id }}
+        labels: ${{ inputs.labels }}
