@@ -1,0 +1,13 @@
+name: "Standard Version"
+description: "Standard Version"
+
+inputs:
+  pre-release:
+    required: false
+    description: "Prerelease"
+
+runs:
+  using: "docker"
+  image: "Dockerfile"
+  args:
+    - ${{ inputs.pre-release }}
