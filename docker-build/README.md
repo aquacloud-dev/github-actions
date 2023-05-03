@@ -7,6 +7,7 @@
 | Name | Description | Default | Required | 
 | ---- | ----------- | ------- | -------- |
 | `build-args` | Build args | `nd` | `false` |
+| `context` | Context | . | `false` |
 | `labels` | Docker labels | `nd` | `false` |
 | `push` | Wether to push the docker image or nto | true | `false` |
 | `registry-url` | Registry URL | `nd` | `true` |
