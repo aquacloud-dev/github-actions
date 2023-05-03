@@ -18,6 +18,10 @@ inputs:
   registry-url:
     description: "Registry URL"
     required: true
+  context:
+    description: "Context"
+    default: "."
+    required: false
 
 runs:
   using: composite
@@ -37,3 +41,4 @@ runs:
         tags: ${{ inputs.tags }}
         build-args: ${{ inputs.build-args }}
         labels: ${{ inputs.labels }}
+        context: ${{ inputs.context }}
