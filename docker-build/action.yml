@@ -22,6 +22,12 @@ inputs:
     description: "Context"
     default: "."
     required: false
+  cache-to:
+    required: false
+    description: "where to store the cache"
+  cache-from:
+    required: false
+    description: "where to read the cache from"
 
 runs:
   using: composite
@@ -42,3 +48,5 @@ runs:
         build-args: ${{ inputs.build-args }}
         labels: ${{ inputs.labels }}
         context: ${{ inputs.context }}
+        cache-from: ${{ inputs.cache-from }}
+        cache-to: ${{ inputs.cache-to }}
