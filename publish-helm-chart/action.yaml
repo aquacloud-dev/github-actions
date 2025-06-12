@@ -1,0 +1,172 @@
+name: Publish Helm Chart
+
+on:
+  workflow_call:
+    inputs:
+      helm_dir:
+        required: true
+        type: string
+        description: "Path to helm directory"
+      app_group:
+        required: true
+        type: string
+        description: "App group"
+      app_name:
+        required: true
+        type: string
+        description: "App name"
+      gcp_region:
+        required: true
+        type: string
+        description: "Google Cloud region"
+      gcp_helm_repository_name:
+        required: true
+        type: string
+        description: "Helm repository name"
+      gcp_project_id:
+        required: true
+        type: string
+        description: "Google Cloud project ID"
+      gcp_service_account:
+        required: true
+        type: string
+        description: "GCP service account"
+      auth_app_id:
+        required: true
+        type: string
+        description: "GitHub App ID"
+    secrets:
+      auth_private_key:
+        required: true
+        description: "GitHub App Private Key"
+      gcp_workload_identity_provider:
+        required: true
+        description: "Google Cloud Workflow Identity Provider"
+
+env:
+  HELM_VERSION: 3.17.0 # Può essere un input se vuoi renderlo configurabile
+  HELM_DIR: ${{ inputs.helm_dir }}
+  APP_GROUP: ${{ inputs.app_group }}
+  APP_NAME: ${{ inputs.app_name }}
+  GCP_REGION: ${{ inputs.gcp_region }}
+  GCP_HELM_REPOSITORY_NAME: ${{ inputs.gcp_helm_repository_name }}
+
+permissions:
+  contents: write
+  id-token: write
+  issues: write # Necessario per semantic-release se gestisce le issue (es. chiusura)
+
+jobs:
+  publish-chart:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Load Github App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ inputs.auth_app_id }}
+          private-key: ${{ secrets.auth_private_key }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0 # semantic-release necessita dell'intera cronologia dei commit
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup helm
+        uses: azure/setup-helm@v1
+        with:
+          version: ${{ env.HELM_VERSION }}x
+
+      - name: Autenticazione a Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ inputs.gcp_project_id }}
+          service_account: ${{ inputs.gcp_service_account }}
+          workload_identity_provider: ${{ secrets.gcp_workload_identity_provider }}
+
+      - name: Configura Docker per GCR (per autenticazione OCI)
+        run: gcloud auth configure-docker --quiet ${{ env.GCP_REGION }}-docker.pkg.dev
+
+      - name: Crea package.json per semantic-release nella directory Helm
+        # Crea il package.json all'interno della cartella specificata da HELM_DIR
+        run: |
+          cat > ${{ env.HELM_DIR }}/package.json <<'EOF'
+          {
+            "name": "${{ env.APP_GROUP }}-${{ env.APP_NAME }}-helm-chart",
+            "version": "0.0.0-development",
+            "description": "Helm chart release with semantic-release.",
+            "private": true,
+            "devDependencies": {
+              "semantic-release": "^24.2.5",
+              "@semantic-release/changelog": "^6.0.3",
+              "@semantic-release/git": "^10.0.1",
+              "semantic-release-helm": "^2.0.0",
+              "@semantic-release/exec": "^7.0.0"
+            },
+            "release": {
+              "tagFormat": "helm-v${version}",
+              "plugins": [
+                [
+                  "@semantic-release/commit-analyzer",
+                  {
+                    "path": "." # Analizza i commit relativi alla directory del chart
+                  }
+                ],
+                [
+                  "semantic-release-helm",
+                  {
+                    "chartPath": "./${{ env.APP_NAME }}", # Percorso relativo alla directory del chart
+                    "onlyUpdateVersion": "true"
+                  }
+                ],
+                [
+                  "@semantic-release/exec",
+                  {
+                    "publishCmd": "helm package ./${{ env.APP_NAME }} --destination . && echo \"VERSION=${nextRelease.version}\" >> $GITHUB_OUTPUT"
+                  }
+                ],
+                [
+                  "@semantic-release/git",
+                  {
+                    "assets": ["./${{ env.APP_NAME }}/Chart.yaml"], # Assicurati che il percorso sia corretto
+                    "message": "chore(release): helm chart ${nextRelease.version} [skip ci]\\n\\n${nextRelease.notes}"
+                  }
+                ]
+              ],
+              "branches": [
+                "main",
+                {
+                  "name": "develop",
+                  "prerelease": true
+                }
+              ]
+            }
+          }
+          EOF
+        shell: bash
+
+      - name: Installa dipendenze di semantic-release
+        run: cd ${{ env.HELM_DIR }} && npm install
+
+      - name: Calcola la nuova versione con semantic-release
+        id: semantic_release_step
+        run: cd ${{ env.HELM_DIR }} && npx semantic-release
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }} # semantic-release usa questo token per interazioni GitHub
+
+      - name: Push Helm Chart to Artifact Registry
+        run: |
+          CHART_NAME="${{ env.APP_NAME }}"
+          CHART_VERSION="${{ steps.semantic_release_step.outputs.version }}"
+          HELM_PACKAGE_PATH="${{ env.HELM_DIR }}/${CHART_NAME}-${CHART_VERSION}.tgz"
+
+          echo "Pushing ${HELM_PACKAGE_PATH} to oci://${{ env.GCP_REGION }}-docker.pkg.dev/${{ inputs.gcp_project_id }}/${{ env.GCP_HELM_REPOSITORY_NAME }}"
+          helm push "${HELM_PACKAGE_PATH}" "oci://${{ env.GCP_REGION }}-docker.pkg.dev/${{ inputs.gcp_project_id }}/${{ env.GCP_HELM_REPOSITORY_NAME }}/${{ env.APP_GROUP }}"
+        shell: bash

@@ -1,0 +1,105 @@
+name: GraphQL Subgraph Schema Check
+
+on:
+  workflow_call:
+    inputs:
+      app_group:
+        required: true
+        type: string
+        description: "App group"
+      app_name:
+        required: true
+        type: string
+        description: "App name"
+      graphql_cosmo_api_url:
+        required: true
+        type: string
+        description: "GraphQL Cosmo Controlplane URL"
+    secrets:
+      graphql_cosmo_api_key:
+        required: true
+        description: "GraphQL Cosmo Controlplane API Key"
+
+env:
+  APP_GROUP: ${{ inputs.app_group }}
+  APP_NAME: ${{ inputs.app_name }}
+  COSMO_API_KEY: ${{ secrets.graphql_cosmo_api_key }}
+  COSMO_API_URL: ${{ inputs.graphql_cosmo_api_url }}
+
+jobs:
+  check-subgraph:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "lts/*"
+
+      - name: Install Cosmo CLI
+        run: |
+          npm install -g wgc@latest
+
+      - name: Build unified GraphQL schema
+        run: |
+          cat ./src/main/resources/schema/*.graphql > ./${{ env.APP_NAME }}.graphql
+          echo "Generated schema file: ${{ env.APP_NAME }}.graphql"
+          ls -l ./${{ env.APP_NAME }}.graphql
+          echo "Content of generated schema:"
+          cat ./${{ env.APP_NAME }}.graphql
+
+      - name: Check if namespace exists and create if not
+        id: manage_namespace_existence
+        run: |
+          echo "Checking for namespace '${{ env.APP_GROUP }}'..."
+          
+          NAMESPACE_EXISTS="false"
+          NAMESPACE_LIST_JSON=$(wgc namespace list --json 2>/dev/null || echo "[]")
+          
+          if echo "$NAMESPACE_LIST_JSON" | jq -e --arg app_group "${{ env.APP_GROUP }}" '.[] | select(.name == $app_group)' > /dev/null; then
+              NAMESPACE_EXISTS="true"
+              echo "Namespace '${{ env.APP_GROUP }}' found."
+          else
+              echo "Namespace '${{ env.APP_GROUP }}' not found."
+          fi
+
+          if [ "$NAMESPACE_EXISTS" == "false" ]; then
+              echo "Namespace '${{ env.APP_GROUP }}' does not exist. Creating it..."
+              npx wgc namespace create ${{ env.APP_GROUP }}
+              echo "Namespace '${{ env.APP_GROUP }}' created successfully."
+          else
+              echo "Namespace '${{ env.APP_GROUP }}' already exists. Skipping creation."
+          fi
+          echo "status=done" >> $GITHUB_OUTPUT # Updated output syntax
+
+      - name: Check if subgraph exists and create if not
+        id: manage_subgraph_existence
+        run: |
+          echo "Checking for subgraph '${{ env.APP_NAME }}' in namespace '${{ env.APP_GROUP }}'..."
+          
+          SUBGRAPH_EXISTS="false"
+          SUBGRAPH_LIST_JSON=$(wgc subgraph list -n ${{ env.APP_GROUP }} --json 2>/dev/null || echo "[]")
+          
+          if echo "$SUBGRAPH_LIST_JSON" | jq -e --arg app_name "${{ env.APP_NAME }}" '.[] | select(.name == $app_name)' > /dev/null; then
+              SUBGRAPH_EXISTS="true"
+              echo "Subgraph '${{ env.APP_NAME }}' found in namespace '${{ env.APP_GROUP }}'."
+          else
+              echo "Subgraph '${{ env.APP_NAME }}' not found in namespace '${{ env.APP_GROUP }}'."
+          fi
+
+          if [ "$SUBGRAPH_EXISTS" == "false" ]; then
+              echo "Subgraph '${{ env.APP_NAME }}' does not exist. Creating it..."
+              wgc subgraph create ${{ env.APP_NAME }} --namespace ${{ env.APP_GROUP }} --label "environment=develop" --routing-url "http://localhost:8080"
+              echo "Subgraph '${{ env.APP_NAME }}' created successfully."
+          else
+              echo "Subgraph '${{ env.APP_NAME }}' already exists. Skipping creation."
+          fi
+          echo "status=done" >> $GITHUB_OUTPUT # Updated output syntax
+      
+      - name: Run subgraph check
+        run: |
+          wgc subgraph check ${{ env.APP_NAME }} --namespace ${{ env.APP_GROUP }} --label "environment=develop" --schema ./${{ env.APP_NAME }}.graphql

@@ -1,0 +1,181 @@
+name: Run Deployment on Kubernetes
+
+on:
+  workflow_call:
+    inputs:
+      tag_version:
+        required: true
+        type: string
+        description: "Docker image version"
+      app_group:
+        required: true
+        type: string
+        description: "App group"
+      app_name:
+        required: true
+        type: string
+        description: "App name"
+      gcp_region:
+        required: true
+        type: string
+        description: "Google Cloud Region"
+      gcp_gke_cluster_name:
+        required: true
+        type: string
+        description: "GKE Cluster name"
+      gcp_project_id:
+        required: true
+        type: string
+        description: "Google Cloud project ID"
+      gcp_service_account:
+        required: true
+        type: string
+        description: "GCP service account"
+      gcp_helm_repository_name:
+        required: true
+        type: string
+        description: "Helm repository name"
+      kube_namespace:
+        required: true
+        type: string
+        description: "Il namespace Kubernetes in cui deployare l'applicazione"
+    secrets:
+      gcp_workload_identity_provider:
+        required: true
+        description: "Google Cloud Workflow Identity Provider"
+
+env:
+  # Normalizza il tag rimuovendo il prefisso 'v' all'inizio
+  NORMALIZED_TAG: ${{ inputs.tag_version }} # Questo verrà normalizzato nello step successivo
+  APP_GROUP: ${{ inputs.app_group }}
+  APP_NAME: ${{ inputs.app_name }}
+  GCP_REGION: ${{ inputs.gcp_region }}
+  GCP_GKE_CLUSTER_NAME: ${{ inputs.gcp_gke_cluster_name }}
+  GCP_HELM_REPOSITORY_NAME: ${{ inputs.gcp_helm_repository_name }}
+  
+  # Queste variabili verranno impostate dinamicamente nello step 'Normalize Tag Version and Set Docker Image'
+  # per garantire che DOCKER_IMAGE e DOCKER_IMAGE_FULL siano sempre basate sul tag normalizzato.
+  DOCKER_IMAGE: '' 
+  DOCKER_IMAGE_VERSION: ''
+  DOCKER_IMAGE_FULL: ''
+  
+  # Componi il nome del chart Helm usando gli input
+  HELM_CHART_NAME: ${{ inputs.app_group }}-${{ inputs.app_name }}
+  KUBE_NAMESPACE: ${{ inputs.kube_namespace }}
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy-on-kubernetes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Normalize Tag Version and Set Docker Image
+        run: |
+          # Rimuovi 'v' dal prefisso del tag se presente
+          NORMALIZED_TAG=$(echo "${{ inputs.tag_version }}" | sed 's/^v//')
+          echo "Normalized tag version: $NORMALIZED_TAG"
+
+          # Imposta DOCKER_IMAGE_VERSION come variabile d'ambiente GitHub
+          echo "DOCKER_IMAGE_VERSION=$NORMALIZED_TAG" >> "$GITHUB_ENV"
+
+          # Costruisci il nome completo dell'immagine Docker usando il tag normalizzato
+          FULL_DOCKER_IMAGE="${{ inputs.gcp_region }}-docker.pkg.dev/${{ inputs.gcp_project_id }}/${{ inputs.app_group }}/${{ inputs.app_name }}:$NORMALIZED_TAG"
+          echo "DOCKER_IMAGE_FULL=$FULL_DOCKER_IMAGE" >> "$GITHUB_ENV"
+          echo "DOCKER_IMAGE=${{ inputs.gcp_region }}-docker.pkg.dev/${{ inputs.gcp_project_id }}/${{ inputs.app_group }}/${{ inputs.app_name }}" >> "$GITHUB_ENV" # Base senza tag
+
+          echo "Full Docker image name: $FULL_DOCKER_IMAGE"
+
+      - name: Auth Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ inputs.gcp_project_id }}
+          service_account: ${{ inputs.gcp_service_account }}
+          workload_identity_provider: ${{ secrets.gcp_workload_identity_provider }}
+
+      - name: Configure Google Cloud CLI
+        uses: 'google-github-actions/setup-gcloud@v2'
+        with:
+          install_components: gke-gcloud-auth-plugin
+
+      - name: Verify Docker Image on Artifact Registry
+        run: |
+          echo "Verifying presence of Docker image: ${{ env.DOCKER_IMAGE_FULL }}"
+          
+          # Estrae l'host del registry (es. europe-west1-docker.pkg.dev)
+          REGISTRY_HOST=$(echo "${{ env.DOCKER_IMAGE_FULL }}" | cut -d'/' -f1)
+          
+          # Estrae il percorso del repository e il tag dell'immagine
+          # Rimuove l'host del registry e poi divide per ':'
+          IMAGE_PATH_WITHOUT_HOST=$(echo "${{ env.DOCKER_IMAGE_FULL }}" | sed -E "s/^${REGISTRY_HOST}\///")
+          REPO_PATH=$(echo "$IMAGE_PATH_WITHOUT_HOST" | cut -d':' -f1)
+          IMAGE_TAG=$(echo "$IMAGE_PATH_WITHOUT_HOST" | cut -d':' -f2)
+
+          echo "Registry Host: $REGISTRY_HOST"
+          echo "Repository Path: $REPO_PATH"
+          echo "Image Tag: $IMAGE_TAG"
+
+          # Lista i tag per il repository specifico usando l'host del registry estratto
+          gcloud artifacts docker tags list "${REGISTRY_HOST}/$REPO_PATH" \
+            --format="value(tag)" \
+            --project="${{ inputs.gcp_project_id }}" | grep -q "^${IMAGE_TAG}$"
+          
+          if [ $? -eq 0 ]; then
+            echo "Docker image ${{ env.DOCKER_IMAGE_FULL }} found on Google Cloud Artifact Registry."
+          else
+            echo "Error: Docker image ${{ env.DOCKER_IMAGE_FULL }} not found on Google Cloud Artifact Registry. Aborting deployment."
+            exit 1
+          fi
+
+      - name: Get GKE credentials
+        run: |
+          gcloud container clusters get-credentials "${{ env.GCP_GKE_CLUSTER_NAME }}" --zone "${{ env.GCP_REGION }}" --project "${{ inputs.gcp_project_id }}"
+
+      - name: Authenticate Helm with GCP Artifact Registry
+        run: |
+          gcloud auth configure-docker "${{ env.GCP_REGION }}-docker.pkg.dev" --project="${{ inputs.gcp_project_id }}"
+          # helm registry login "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_HELM_REPOSITORY_NAME }}" --username=_json_key --password-stdin < ~/.config/gcloud/application_default_credentials.json
+
+      - name: Deploy Helm Chart
+        run: |
+          echo "Deploying Helm chart '${{ env.HELM_CHART_NAME }}' from repository 'oci://${{ env.GCP_REGION }}-docker.pkg.dev/${{ inputs.gcp_project_id }}/${{ env.GCP_HELM_REPOSITORY_NAME }}' to namespace '${{ env.KUBE_NAMESPACE }}'"
+          
+          helm upgrade --install ${{ env.APP_NAME }} oci://${{ env.GCP_REGION }}-docker.pkg.dev/${{ inputs.gcp_project_id }}/${{ env.GCP_HELM_REPOSITORY_NAME }}/${{ env.APP_GROUP }}/${{ env.APP_NAME }} \
+            --namespace ${{ env.KUBE_NAMESPACE }} \
+            --create-namespace \
+            --set image.repository="${{ env.DOCKER_IMAGE }}" \
+            --set image.tag="${{ env.DOCKER_IMAGE_VERSION }}"
+          
+          echo "Helm deployment initiated."
+
+      - name: Verify Kubernetes Deployment Status
+        run: |
+          echo "Verifying Kubernetes deployment status for app: ${{ env.APP_NAME }} in namespace: ${{ env.KUBE_NAMESPACE }}"
+          
+          kubectl wait --for=condition=Available deployment/${{ env.APP_NAME }} -n ${{ env.KUBE_NAMESPACE }} --timeout=300s # Increased timeout for robustness
+          
+          if [ $? -ne 0 ]; then
+            echo "Error: Deployment ${{ env.APP_NAME }} did not become available within the timeout."
+            kubectl get deployment ${{ env.APP_NAME }} -n ${{ env.KUBE_NAMESPACE }}
+            kubectl describe deployment ${{ env.APP_NAME }} -n ${{ env.KUBE_NAMESPACE }}
+            exit 1
+          fi
+          
+          echo "Deployment ${{ env.APP_NAME }} is available."
+
+          POD_SELECTOR=$(kubectl get deployment ${{ env.APP_NAME }} -n ${{ env.KUBE_NAMESPACE }} -o=jsonpath='{.spec.selector.matchLabels}' | jq -r 'to_entries | map("\(.key)=\(.value)") | join(",")')
+          echo "Waiting for pods with selector: $POD_SELECTOR to be ready."
+          kubectl wait --for=condition=Ready pod -l "$POD_SELECTOR" -n ${{ env.KUBE_NAMESPACE }} --timeout=300s # Increased timeout for robustness
+
+          if [ $? -ne 0 ]; then
+            echo "Error: Not all pods for deployment ${{ env.APP_NAME }} became ready within the timeout."
+            kubectl get pods -l "$POD_SELECTOR" -n ${{ env.KUBE_NAMESPACE }}
+            exit 1
+          fi
+
+          echo "All pods for ${{ env.APP_NAME }} are ready."

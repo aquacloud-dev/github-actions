@@ -1,0 +1,241 @@
+name: Build e Dockerize Spring Boot App
+
+on:
+  workflow_call:
+    inputs:
+      java_version:
+        required: true
+        type: string
+        description: "Java version"
+      app_group:
+        required: true
+        type: string
+        description: "App group"
+      app_name:
+        required: true
+        type: string
+        description: "App name"
+      gcp_region:
+        required: true
+        type: string
+        description: "Google Cloud Region"
+      gcp_project_id:
+        required: true
+        type: string
+        description: "Google Cloud project ID"
+      gcp_service_account:
+        required: true
+        type: string
+        description: "GCP service account"
+      mvn_token:
+        required: true
+        type: string
+        description: "Github Packages Maven Token"
+      auth_app_id:
+        required: true
+        type: string
+        description: "GitHub App ID"
+      docker_image_base:
+        required: true
+        type: string
+        description: "Base name for the Docker image (e.g., ${{ env.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ env.APP_GROUP }}/${{ env.APP_NAME }})"
+    secrets:
+      auth_private_key:
+        required: true
+        description: "GitHub App Private Key"
+      gcp_workload_identity_provider:
+        required: true
+        description: "Google Cloud Workflow Identity Provider"
+    outputs:
+      version:
+        description: "New release published version"
+        value: ${{ jobs.build-and-deploy.outputs.version }}
+
+env:
+  JAVA_VERSION: ${{ inputs.java_version }}
+  APP_GROUP: ${{ inputs.app_group }}
+  APP_NAME: ${{ inputs.app_name }}
+  GCP_REGION: ${{ inputs.gcp_region }}
+  DOCKER_IMAGE_BASE: ${{ inputs.docker_image_base }} # Make sure this is defined
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+  issues: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.semantic_release_step.outputs.version }} # Output the version
+    steps:
+      - name: Load Github App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ inputs.auth_app_id }}
+          private-key: ${{ secrets.auth_private_key }}
+
+      - name: Checkout del progetto
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Configura Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'corretto'
+          cache: 'maven'
+
+      - name: Configura Node.js (per semantic-release)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Configura Maven per il Registry Privato di GitHub
+        run: |
+          mkdir -p ~/.m2
+          cat > ~/.m2/settings.xml <<EOF
+          <settings xmlns="http://maven.apache.org/SETTINGS/1.1.0"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.1.0 http://maven.apache.org/xsd/settings-1.1.0.xsd">
+            <activeProfiles>
+              <activeProfile>github</activeProfile>
+            </activeProfiles>
+            <profiles>
+              <profile>
+                <id>github</id>
+                <repositories>
+                  <repository>
+                    <id>central</id>
+                    <url>https://repo.maven.apache.org/maven2</url>
+                    <releases><enabled>true</enabled></releases>
+                    <snapshots><enabled>false</enabled></snapshots>
+                  </repository>
+                  <repository>
+                    <id>github</id>
+                    <url>https://maven.pkg.github.com/${{ inputs.app_group }}/${{ inputs.app_name }}</url>
+                    <releases><enabled>true</enabled></releases>
+                    <snapshots><enabled>true</enabled></snapshots>
+                  </repository>
+                </repositories>
+              </profile>
+            </profiles>
+            <servers>
+              <server>
+                <id>github</id>
+                <username>${{ github.actor }}</username>
+                <password>${{ inputs.mvn_token }}</password>
+              </server>
+            </servers>
+          </settings>
+          EOF
+        shell: bash
+
+      - name: Crea package.json per semantic-release
+        run: |
+          cat > package.json <<'EOF'
+          {
+            "name": "${{ env.APP_GROUP }}-${{ env.APP_NAME }}",
+            "version": "0.0.0-development",
+            "description": "A Spring Boot application with semantic-release for versioning.",
+            "private": true,
+            "devDependencies": {
+              "semantic-release": "^24.2.5",
+              "@semantic-release/changelog": "^6.0.3",
+              "@semantic-release/git": "^10.0.1",
+              "@semantic-release/github": "^11.0.0",
+              "@semantic-release/exec": "^7.0.0"
+            },
+            "release": {
+              "plugins": [
+                "@semantic-release/commit-analyzer",
+                "@semantic-release/release-notes-generator",
+                [
+                  "@semantic-release/changelog",
+                  {
+                    "changelogFile": "CHANGELOG.md"
+                  }
+                ],
+                [
+                  "@semantic-release/exec",
+                  {
+                    "publishCmd": "echo \"VERSION=${nextRelease.version}\" >> $GITHUB_OUTPUT"
+                  }
+                ],
+                [
+                  "@semantic-release/git",
+                  {
+                    "assets": ["CHANGELOG.md"],
+                    "message": "chore(release): ${nextRelease.version} [skip ci] ${nextRelease.notes}"
+                  }
+                ],
+                "@semantic-release/github"
+              ],
+              "branches": [
+                "main",
+                {
+                  "name": "develop",
+                  "prerelease": true
+                }
+              ]
+            }
+          }
+          EOF
+        shell: bash
+
+      - name: Installa dipendenze di semantic-release
+        run: npm install
+
+      - name: Calcola la nuova versione con semantic-release
+        id: semantic_release_step
+        run: npx semantic-release
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+
+      - name: Stampa la versione calcolata
+        run: echo "La versione calcolata è ${{ steps.semantic_release_step.outputs.version }}"
+
+      - name: Build del progetto Spring Boot
+        run: mvn clean install -DskipTests
+
+      - name: Autenticazione a Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ inputs.gcp_project_id }}
+          service_account: ${{ inputs.gcp_service_account }}
+          workload_identity_provider: ${{ secrets.gcp_workload_identity_provider }}
+
+      - name: Configura Docker per GCR
+        run: gcloud auth configure-docker --quiet ${{ env.GCP_REGION }}-docker.pkg.dev
+
+      - name: Costruisci l'immagine Docker
+        run: |
+          docker build -t ${{ env.GCP_REGION }}-docker.pkg.dev/${{ inputs.gcp_project_id }}/${{ env.APP_GROUP }}/${{ env.APP_NAME }}:${{ steps.semantic_release_step.outputs.version }} .
+        env:
+          VERSION: ${{ steps.semantic_release_step.outputs.version }}
+
+      - name: Crea e Pubblica tag Docker aggiuntivi (latest/develop)
+        run: |
+          IMAGE_NAME_WITH_VERSION="${{ env.DOCKER_IMAGE_BASE }}:${{ steps.semantic_release_step.outputs.version }}"
+
+          echo "Attempting to push image: $IMAGE_NAME_WITH_VERSION"
+          docker push "$IMAGE_NAME_WITH_VERSION"
+
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "Branch main rilevato. Aggiungo tag 'latest'."
+            docker tag "$IMAGE_NAME_WITH_VERSION" "${{ env.DOCKER_IMAGE_BASE }}:latest"
+            echo "Attempting to push image: ${{ env.DOCKER_IMAGE_BASE }}:latest"
+            docker push "${{ env.DOCKER_IMAGE_BASE }}:latest"
+          elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            echo "Branch develop rilevato. Aggiungo tag 'develop'."
+            docker tag "$IMAGE_NAME_WITH_VERSION" "${{ env.DOCKER_IMAGE_BASE }}:develop"
+            echo "Attempting to push image: ${{ env.DOCKER_IMAGE_BASE }}:develop"
+            docker push "${{ env.DOCKER_IMAGE_BASE }}:develop"
+          fi
+        env:
+          VERSION: ${{ steps.semantic_release_step.outputs.version }}
