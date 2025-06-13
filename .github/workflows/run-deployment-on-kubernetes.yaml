@@ -179,3 +179,26 @@ jobs:
           fi
 
           echo "All pods for ${{ env.APP_NAME }} are ready."
+      
+      - name: Rollback Helm Release on Failure
+        if: failure()
+        run: |
+          echo "Deployment failed. Attempting to rollback Helm release for ${{ env.APP_NAME }} in namespace ${{ env.KUBE_NAMESPACE }}."
+          # Get the history of the release to identify the previous successful revision
+          helm history ${{ env.APP_NAME }} -n ${{ env.KUBE_NAMESPACE }}
+
+          PREVIOUS_REVISION=$(helm history ${{ env.APP_NAME }} -n ${{ env.KUBE_NAMESPACE }} | grep "SUPERSEDED" | tail -n 1 | awk '{print $1}')
+
+          if [ -n "$PREVIOUS_REVISION" ]; then
+            echo "Found previous successful revision: $PREVIOUS_REVISION. Rolling back to this revision."
+            helm rollback ${{ env.APP_NAME }} $PREVIOUS_REVISION -n ${{ env.KUBE_NAMESPACE }}
+            echo "Helm rollback initiated. Please verify the status of your application manually."
+          else
+            echo "No previous successful Helm revision found for ${{ env.APP_NAME }} in namespace ${{ env.KUBE_NAMESPACE }}. Cannot perform automatic rollback."
+            # Optionally, if you want to delete the failed release completely in case of no previous revision:
+            helm uninstall ${{ env.APP_NAME }} -n ${{ env.KUBE_NAMESPACE }}
+            echo "Failed Helm release ${{ env.APP_NAME }} uninstalled."
+          fi
+        # We add `continue-on-error: true` here so that even if the rollback fails,
+        # the overall workflow doesn't get stuck and can proceed to mark the job as failed.
+        continue-on-error: true
