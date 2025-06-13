@@ -27,10 +27,6 @@ on:
         required: true
         type: string
         description: "GCP service account"
-      mvn_token:
-        required: true
-        type: string
-        description: "Github Packages Maven Token"
       auth_app_id:
         required: true
         type: string
@@ -127,8 +123,8 @@ jobs:
             <servers>
               <server>
                 <id>github</id>
-                <username>${{ github.actor }}</username>
-                <password>${{ inputs.mvn_token }}</password>
+                <username>${{ github.repository_owner }}</username>
+                <password>${{ steps.app-token.outputs.token }}</password>
               </server>
             </servers>
           </settings>
