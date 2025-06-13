@@ -34,7 +34,7 @@ on:
       docker_image_base:
         required: true
         type: string
-        description: "Base name for the Docker image (e.g., ${{ env.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ env.APP_GROUP }}/${{ env.APP_NAME }})"
+        description: "Base name for the Docker image"
     secrets:
       auth_private_key:
         required: true
