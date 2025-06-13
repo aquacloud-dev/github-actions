@@ -116,13 +116,13 @@ jobs:
                 [
                   "@semantic-release/commit-analyzer",
                   {
-                    "path": "." # Analizza i commit relativi alla directory del chart
+                    "path": "."
                   }
                 ],
                 [
                   "semantic-release-helm",
                   {
-                    "chartPath": "./${{ env.APP_NAME }}", # Percorso relativo alla directory del chart
+                    "chartPath": "./${{ env.APP_NAME }}",
                     "onlyUpdateVersion": "true"
                   }
                 ],
@@ -135,7 +135,7 @@ jobs:
                 [
                   "@semantic-release/git",
                   {
-                    "assets": ["./${{ env.APP_NAME }}/Chart.yaml"], # Assicurati che il percorso sia corretto
+                    "assets": ["./${{ env.APP_NAME }}/Chart.yaml"],
                     "message": "chore(release): helm chart ${nextRelease.version} [skip ci]\\n\\n${nextRelease.notes}"
                   }
                 ]
