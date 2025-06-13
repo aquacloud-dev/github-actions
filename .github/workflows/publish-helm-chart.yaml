@@ -81,7 +81,7 @@ jobs:
       - name: Setup helm
         uses: azure/setup-helm@v1
         with:
-          version: ${{ env.HELM_VERSION }}x
+          version: ${{ env.HELM_VERSION }}
 
       - name: Autenticazione a Google Cloud
         id: auth
